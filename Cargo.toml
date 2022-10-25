@@ -7,3 +7,7 @@ edition = "2021"
 bimap = "0.6.2"
 text_io = "0.1.10"
 eframe = "0.19.0"
+
+[dependencies.native-dialog]
+# version = "0.6.3"
+features = ["windows_dpi_awareness", "windows_visual_styles"]
