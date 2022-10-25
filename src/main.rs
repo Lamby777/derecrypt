@@ -46,6 +46,10 @@ impl eframe::App for MyApp {
 				if ui.button("Strip").clicked() {
 					self.string = self.string.trim().to_string();
 				}
+
+				if ui.button("Deflate").clicked() {
+					self.string.retain(|c| !c.is_whitespace());
+				}
 			});
 
 			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
