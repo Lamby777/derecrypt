@@ -7,6 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use eframe::egui;
+use egui::*;
 
 const TITLEBAR_HEIGHT: f32 = 28.0;
 
@@ -28,7 +29,8 @@ fn main() {
 
 #[derive(Default)]
 struct MyApp {
-	file:	String,
+	_file:	String,
+	string:	String,
 }
 
 impl eframe::App for MyApp {
@@ -38,16 +40,19 @@ impl eframe::App for MyApp {
 
 	fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 		custom_window_frame(ctx, frame, "StringSuite", |ui| {
-			ui.label("Test");
+			ui.heading("String Editor");
+
 			ui.horizontal(|ui| {
-				
+				if ui.button("Strip").clicked() {
+					self.string = self.string.trim().to_string();
+				}
 			});
 
-			ui.heading(format!("Editing File \"{}\"", self.file));
-			
-			ui.horizontal(|ui| {
-				ui.label("Your name: ");
-				ui.text_edit_singleline(&mut self.file);
+			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
+			|ui| {
+
+				// Render this stuff in the center
+				ui.text_edit_singleline(&mut self.string);
 			});
 		});
 	}
