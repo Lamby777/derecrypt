@@ -6,10 +6,6 @@
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::env;
-use std::num::Wrapping;
-use bimap::*;
-use text_io::read;
 use eframe::egui;
 
 const TITLEBAR_HEIGHT: f32 = 28.0;
@@ -41,11 +37,10 @@ impl eframe::App for MyApp {
 	}
 
 	fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-		custom_window_frame(ctx, frame, "egui with custom frame", |ui| {
-			ui.label("This is just the contents of the window");
+		custom_window_frame(ctx, frame, "StringSuite", |ui| {
+			ui.label("Test");
 			ui.horizontal(|ui| {
-				ui.label("egui theme:");
-				egui::widgets::global_dark_light_mode_buttons(ui);
+				
 			});
 
 			ui.heading(format!("Editing File \"{}\"", self.file));
@@ -90,6 +85,8 @@ fn custom_window_frame(
 				text_color,
 			);
 
+			//egui::widgets::global_dark_light_mode_buttons(ui);
+
 			// Paint the line under the title:
 			painter.line_segment(
 				[
@@ -101,7 +98,10 @@ fn custom_window_frame(
 
 			// Add the close button:
 			let close_button = ui.put(
-				Rect::from_min_size(rect.left_top(), Vec2::splat(TITLEBAR_HEIGHT)),
+				Rect::from_min_size(
+					rect.right_top() - vec2(32.0, 0.0),
+					Vec2::splat(TITLEBAR_HEIGHT)
+				),
 				Button::new(RichText::new("❌").size(TITLEBAR_HEIGHT - 4.0)).frame(false),
 			);
 
