@@ -29,7 +29,7 @@ fn main() {
 }
 
 struct MyApp {
-	file:	String,
+	file:	Option<String>,
 	string:	String,
 	args:	Vec<String>
 }
@@ -37,7 +37,7 @@ struct MyApp {
 impl MyApp {
 	pub fn new() -> Self {
 		MyApp {
-			file:	String::new(),
+			file:	Some(String::new()),
 			string:	String::new(),
 			args:	vec!["".to_string()],
 		}
