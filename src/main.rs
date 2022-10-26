@@ -10,28 +10,38 @@ use eframe::egui;
 use egui::*;
 use native_dialog::{MessageDialog, MessageType};
 
-const TITLEBAR_HEIGHT: f32 = 28.0;
+const TITLEBAR_HEIGHT: f32 = 24.0;
 
 fn main() {
 	let options = eframe::NativeOptions {
-		// Hide the OS-specific "chrome" around the window:
-		decorated: false,
-		// To have rounded corners we need transparency:
-		transparent: true,
-		min_window_size: Some(egui::vec2(320.0, 100.0)),
+		always_on_top:	true,
+		decorated:		false,
+		transparent:	true,
+		vsync:			true,
 		..Default::default()
 	};
+
 	eframe::run_native(
-		"Custom window frame", // unused title
+		"StringSuite Editor",
 		options,
-		Box::new(|_cc| Box::new(MyApp::default())),
+		Box::new(|_cc| Box::new(MyApp::new())),
 	);
 }
 
-#[derive(Default)]
 struct MyApp {
-	_file:	String,
+	file:	String,
 	string:	String,
+	args:	Vec<String>
+}
+
+impl MyApp {
+	pub fn new() -> Self {
+		MyApp {
+			file:	String::new(),
+			string:	String::new(),
+			args:	vec!["".to_string()],
+		}
+	}
 }
 
 impl eframe::App for MyApp {
@@ -41,7 +51,11 @@ impl eframe::App for MyApp {
 
 	fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 		custom_window_frame(ctx, frame, "StringSuite", |ui| {
-			ui.heading("String Editor");
+			ui.heading("Arguments");
+
+			for arg_i in 0..self.args.len() {
+				ui.add(egui::TextEdit::singleline(&mut self.args[arg_i]));
+			}
 
 			ui.horizontal(|ui| {
 				if ui.button("Strip").clicked() {
