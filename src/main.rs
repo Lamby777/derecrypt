@@ -8,7 +8,6 @@
 
 use eframe::egui;
 use egui::*;
-use native_dialog::{MessageDialog, MessageType};
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
 
@@ -155,16 +154,4 @@ fn custom_window_frame(
 			let mut content_ui = ui.child_ui(content_rect, *ui.layout());
 			add_contents(&mut content_ui);
 		});
-}
-
-fn open_dialog<Tt: AsRef<str>, Tx: AsRef<str>>(title: Tt, text: Tx) {
-	let rtitle = title.as_ref();
-	let rtext = text.as_ref();
-
-	MessageDialog::new()
-		.set_type(MessageType::Warning)
-		.set_title(&rtitle)
-		.set_text(&rtext)
-		.show_alert()
-		.unwrap();
 }
