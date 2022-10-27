@@ -88,7 +88,7 @@ impl eframe::App for MyApp {
 						bg_fill:	ThemeColors::BG_PURPLE_DEEP,
 						bg_stroke:	Stroke::new(2.0, ThemeColors::BG_PURPLE),
 						fg_stroke:	Stroke::new(1.0, ThemeColors::TEXT),
-						rounding:	Rounding::default(),
+						rounding:	Rounding::same(4.0),
 						expansion:	0.0,
 					}
 				},
@@ -125,7 +125,6 @@ impl eframe::App for MyApp {
 				let writebox = TextEdit::multiline(&mut self.string)
 					.font(TextStyle::Monospace) // for cursor height
 					.code_editor()
-					.desired_rows(10)
 					.lock_focus(true)
 					.desired_width(f32::INFINITY);
 				
@@ -161,7 +160,9 @@ fn custom_window_frame(
 	title: &str,
 	add_contents: impl FnOnce(&mut Ui),
 ) {
-	let text_color = ctx.style().visuals.text_color();
+	let text_color		= ctx.style().visuals.text_color();
+	let window_stroke	= ctx.style().visuals.window_stroke();
+	let window_fill		= ctx.style().visuals.window_fill();
 
 	CentralPanel::default()
 		.frame(Frame::none())
@@ -173,8 +174,8 @@ fn custom_window_frame(
 			painter.rect(
 				rect.shrink(1.0),
 				10.0,
-				ctx.style().visuals.window_fill(),
-				ctx.style().visuals.window_stroke(),
+				window_fill,
+				window_stroke,
 			);
 
 			// Paint the title:
@@ -192,7 +193,7 @@ fn custom_window_frame(
 					rect.left_top() + vec2(2.0, TITLEBAR_HEIGHT),
 					rect.right_top() + vec2(-2.0, TITLEBAR_HEIGHT),
 				],
-				Stroke::new(1.0, text_color),
+				window_stroke,
 			);
 
 			// Add the close button:
