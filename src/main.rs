@@ -6,9 +6,11 @@
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs, path::Path};
+use std::{fs, path::Path, collections::HashMap};
 use tinyfiledialogs as tfd;
 use eframe::{egui::{*, style::Widgets}};
+use strum::IntoEnumIterator; // 0.17.1
+use strum_macros::EnumIter; // 0.17.1
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
 
@@ -38,18 +40,31 @@ fn main() {
 	);
 }
 
+#[derive(Eq, Hash, PartialEq, Copy, Clone, EnumIter)]
+enum WindowTypes {
+	ConvertBase,
+}
+
 struct MyApp {
-	outfile:	Option<String>,
-	string:		String,
-	args:		Vec<String>
+	open_modals:	HashMap<WindowTypes, bool>,
+	outfile:		Option<String>,
+	string:			String,
+	args:			Vec<String>
 }
 
 impl MyApp {
 	pub fn new() -> Self {
+		let mut modals_map = HashMap::new();
+		
+		for wintype in WindowTypes::iter() {
+			modals_map.insert(wintype, false);
+		}
+
 		MyApp {
-			outfile:	None,
-			string:		String::new(),
-			args:		vec![String::new()],
+			open_modals:	modals_map,
+			outfile:		None,
+			string:			String::new(),
+			args:			vec![String::new()],
 		}
 	}
 
@@ -142,6 +157,13 @@ impl eframe::App for MyApp {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
+			if *self.open_modals.get(&WindowTypes::ConvertBase).unwrap() {
+				Window::new("Convert Base")
+					.show(ctx, |ui| {
+						ui.label("contents");
+					});
+			}
+			
 			ui.heading("Arguments");
 
 			for arg_i in 0..self.args.len() {
@@ -155,6 +177,13 @@ impl eframe::App for MyApp {
 
 				if ui.button("Deflate").clicked() {
 					self.string.retain(|c| !c.is_whitespace());
+				}
+
+				if ui.button("Conv Base").clicked() {
+					// Toggle whether or not the array contains
+					let val_o = *self.open_modals.get(&WindowTypes::ConvertBase).unwrap();
+
+					self.open_modals.insert(WindowTypes::ConvertBase, !val_o);
 				}
 			});
 
