@@ -8,9 +8,17 @@
 
 use std::{fs, path::Path};
 use tinyfiledialogs as tfd;
-use eframe::egui::*;
+use eframe::{egui::{*, style::Widgets}};
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
+
+struct ThemeColors;
+
+impl ThemeColors {
+	const BG_PURPLE:	Color32	= Color32::from_rgb(79, 0, 148);
+	const BG_PURPLE_D:	Color32	= Color32::from_rgb(42, 0, 79);
+	const TEXT:			Color32 = Color32::WHITE;
+}
 
 fn main() {
 	let options = eframe::NativeOptions {
@@ -65,6 +73,29 @@ impl eframe::App for MyApp {
 		} else {
 			String::from("StringSuite")
 		};
+
+		let visuals = Visuals {
+			resize_corner_size:		4.0,
+			hyperlink_color:		Color32::WHITE,
+
+			widgets: Widgets {
+				noninteractive: {
+					style::WidgetVisuals {
+						bg_fill:	ThemeColors::BG_PURPLE_D,
+						bg_stroke:	Stroke::new(2.0, ThemeColors::BG_PURPLE),
+						fg_stroke:	Stroke::new(1.0, ThemeColors::TEXT),
+						rounding:	Rounding::default(),
+						expansion:	0.0,
+					}
+				},
+
+				..Widgets::dark()
+			},
+		
+			..Visuals::dark()
+		};
+		
+		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			ui.heading("Arguments");
@@ -139,7 +170,7 @@ fn custom_window_frame(
 				rect.shrink(1.0),
 				10.0,
 				ctx.style().visuals.window_fill(),
-				Stroke::new(1.0, text_color),
+				ctx.style().visuals.window_stroke(),
 			);
 
 			// Paint the title:
@@ -150,8 +181,6 @@ fn custom_window_frame(
 				FontId::proportional(TITLEBAR_HEIGHT * 0.8),
 				text_color,
 			);
-
-			//widgets::global_dark_light_mode_buttons(ui);
 
 			// Paint the line under the title:
 			painter.line_segment(
