@@ -101,9 +101,9 @@ impl eframe::App for MyApp {
 				// Open a text file
 				let fname = tfd::open_file_dialog(
 					"Load String From File", "", None
-				).unwrap();
+				).expect("Failed to load file path");
 
-				let fcontent = fs::read_to_string(&fname).unwrap();
+				let fcontent = fs::read_to_string(&fname).expect("Failed to read file");
 
 				if tfd::message_box_yes_no(
 					"String Loader",
