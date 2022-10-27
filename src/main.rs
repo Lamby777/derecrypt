@@ -15,9 +15,11 @@ const TITLEBAR_HEIGHT: f32 = 24.0;
 struct ThemeColors;
 
 impl ThemeColors {
-	const BG_PURPLE:	Color32	= Color32::from_rgb(79, 0, 148);
-	const BG_PURPLE_D:	Color32	= Color32::from_rgb(42, 0, 79);
-	const TEXT:			Color32 = Color32::WHITE;
+	const BG_PURPLE:		Color32	= Color32::from_rgb(79, 0, 148);
+	const BG_PURPLE_DEEP:	Color32	= Color32::from_rgb(42, 0, 79);
+	const BG_PURPLE_LIGHT:	Color32	= Color32::from_rgb(142, 24, 240);
+	const BG_PURPLE_DARK:	Color32	= Color32::from_rgb(18, 0, 33);
+	const TEXT:				Color32 = Color32::WHITE;
 }
 
 fn main() {
@@ -76,12 +78,14 @@ impl eframe::App for MyApp {
 
 		let visuals = Visuals {
 			resize_corner_size:		4.0,
-			hyperlink_color:		Color32::WHITE,
+			hyperlink_color:		ThemeColors::BG_PURPLE_LIGHT,
+			faint_bg_color:			ThemeColors::BG_PURPLE_LIGHT,
+			extreme_bg_color:		ThemeColors::BG_PURPLE_DARK,
 
 			widgets: Widgets {
 				noninteractive: {
 					style::WidgetVisuals {
-						bg_fill:	ThemeColors::BG_PURPLE_D,
+						bg_fill:	ThemeColors::BG_PURPLE_DEEP,
 						bg_stroke:	Stroke::new(2.0, ThemeColors::BG_PURPLE),
 						fg_stroke:	Stroke::new(1.0, ThemeColors::TEXT),
 						rounding:	Rounding::default(),
