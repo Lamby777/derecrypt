@@ -157,8 +157,8 @@ impl eframe::App for MyApp {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			if *self.open_modals.get(&WindowTypes::ConvertBase).unwrap() {
-				Window::new("Convert Base")
+			if self.open_modals[&WindowTypes::ConvertBase] {
+					Window::new("Convert Base")
 					.show(ctx, |ui| {
 						ui.label("contents");
 					});
@@ -180,10 +180,7 @@ impl eframe::App for MyApp {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					// Toggle whether or not the array contains
-					let val_o = *self.open_modals.get(&WindowTypes::ConvertBase).unwrap();
-
-					self.open_modals.insert(WindowTypes::ConvertBase, !val_o);
+					self.open_modals.entry(WindowTypes::ConvertBase).and_modify(|val| *val = !*val);
 				}
 			});
 
