@@ -6,7 +6,7 @@
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::fs;
+use std::{fs, path::Path};
 use tinyfiledialogs as tfd;
 use eframe::egui::*;
 
@@ -37,10 +37,20 @@ struct MyApp {
 impl MyApp {
 	pub fn new() -> Self {
 		MyApp {
-			outfile:	Some(String::new()),
+			outfile:	None,
 			string:		String::new(),
 			args:		vec![String::new()],
 		}
+	}
+
+	pub fn filename(&self) -> Option<String> {
+		let outfile = &self.outfile.as_ref();
+
+		if let None = outfile {
+			return None;
+		}
+
+		Some(Path::new(outfile.unwrap()).file_name().unwrap().to_str().unwrap().to_string())
 	}
 }
 
@@ -50,7 +60,12 @@ impl eframe::App for MyApp {
 	}
 
 	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
-		custom_window_frame(ctx, frame, "StringSuite", |ui| {
+		let titlebar_text = match self.filename() {
+			None	=> String::from("StringSuite"),
+			_		=> format!("StringSuite: {}", self.filename().unwrap())
+		};
+
+		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			ui.heading("Arguments");
 
 			for arg_i in 0..self.args.len() {
