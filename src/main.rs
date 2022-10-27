@@ -7,9 +7,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fs;
-use eframe::egui;
-use egui::*;
-use tinyfiledialogs::*;
+use tinyfiledialogs as tfd;
+use eframe::egui::*;
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
 
@@ -46,16 +45,16 @@ impl MyApp {
 }
 
 impl eframe::App for MyApp {
-	fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-		egui::Rgba::TRANSPARENT // Make sure we don't paint anything behind the rounded corners
+	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
+		Rgba::TRANSPARENT // Make sure we don't paint anything behind the rounded corners
 	}
 
-	fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
 		custom_window_frame(ctx, frame, "StringSuite", |ui| {
 			ui.heading("Arguments");
 
 			for arg_i in 0..self.args.len() {
-				ui.add(egui::TextEdit::singleline(&mut self.args[arg_i]));
+				ui.add(TextEdit::singleline(&mut self.args[arg_i]));
 			}
 
 			ui.horizontal(|ui| {
@@ -73,7 +72,7 @@ impl eframe::App for MyApp {
 
 				// Render this stuff in the center
 				let writebox = TextEdit::multiline(&mut self.string)
-					.font(egui::TextStyle::Monospace) // for cursor height
+					.font(TextStyle::Monospace) // for cursor height
 					.code_editor()
 					.desired_rows(10)
 					.lock_focus(true)
@@ -82,20 +81,20 @@ impl eframe::App for MyApp {
 				ui.add(writebox);
 			});
 
-			if ui.input_mut().consume_key(egui::Modifiers::COMMAND, egui::Key::O) {
+			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
 				// Open a text file
-				let fname = open_file_dialog(
+				let fname = tfd::open_file_dialog(
 					"Load String From File", "", None
 				).unwrap();
 
 				let fcontent = fs::read_to_string(&fname).unwrap();
 
-				if message_box_yes_no(
+				if tfd::message_box_yes_no(
 					"String Loader",
 					format!("Replace the current working path with {}?", &fname[..]).as_str(),
-					MessageBoxIcon::Question,
-					YesNo::Yes
-				) == YesNo::Yes {
+					tfd::MessageBoxIcon::Question,
+					tfd::YesNo::Yes
+				) == tfd::YesNo::Yes {
 					self.outfile = Some(fname);
 				}
 
@@ -106,12 +105,11 @@ impl eframe::App for MyApp {
 }
 
 fn custom_window_frame(
-	ctx: &egui::Context,
+	ctx: &Context,
 	frame: &mut eframe::Frame,
 	title: &str,
-	add_contents: impl FnOnce(&mut egui::Ui),
+	add_contents: impl FnOnce(&mut Ui),
 ) {
-	use egui::*;
 	let text_color = ctx.style().visuals.text_color();
 
 	CentralPanel::default()
@@ -137,7 +135,7 @@ fn custom_window_frame(
 				text_color,
 			);
 
-			//egui::widgets::global_dark_light_mode_buttons(ui);
+			//widgets::global_dark_light_mode_buttons(ui);
 
 			// Paint the line under the title:
 			painter.line_segment(
