@@ -183,7 +183,7 @@ impl eframe::App for MyApp {
 
 			// If managing files
 			let ctrl_n =
-			ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
+				ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
 			let ctrl_s =
 				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
 			let ctrl_shift_s =
@@ -198,7 +198,8 @@ impl eframe::App for MyApp {
 
 				// Save to output file, unless using CTRL N to only edit path
 				if ctrl_s || ctrl_shift_s {
-					fs::write(self.outfile.as_ref().unwrap(), &self.string);
+					fs::write(self.outfile.as_ref().unwrap(), &self.string)
+						.expect("Failed to write file");
 				}
 			}
 		});
