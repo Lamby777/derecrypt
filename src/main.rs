@@ -46,11 +46,11 @@ impl MyApp {
 	pub fn filename(&self) -> Option<String> {
 		let outfile = &self.outfile.as_ref();
 
-		if let None = outfile {
-			return None;
+		if let Some(v) = outfile {
+			Some(Path::new(v).file_name().unwrap().to_str().unwrap().to_string())
+		} else {
+			None
 		}
-
-		Some(Path::new(outfile.unwrap()).file_name().unwrap().to_str().unwrap().to_string())
 	}
 }
 
@@ -60,9 +60,10 @@ impl eframe::App for MyApp {
 	}
 
 	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
-		let titlebar_text = match self.filename() {
-			None	=> String::from("StringSuite"),
-			_		=> format!("StringSuite: {}", self.filename().unwrap())
+		let titlebar_text = if let Some(v) = self.filename() {
+			format!("StringSuite: {}", v)
+		} else {
+			String::from("StringSuite")
 		};
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
