@@ -65,7 +65,7 @@ impl MyApp {
 
 	// Pops up a dialog to open a new file, and then asks
 	// if the selected path should be the new output path
-	fn get_desired_path(&mut self, save: bool) -> String {
+	fn get_desired_path(&mut self, save: bool, force_overwrite: bool) -> String {
 		let fname;
 
 		loop {
@@ -91,7 +91,7 @@ impl MyApp {
 			};
 		}
 
-		if self.outfile.is_none() || tfd::message_box_yes_no(
+		if self.outfile.is_none() || force_overwrite || tfd::message_box_yes_no(
 			"StringSuite",
 			format!("Replace the current working path with {}?", &fname[..]).as_str(),
 			tfd::MessageBoxIcon::Question,
@@ -174,27 +174,32 @@ impl eframe::App for MyApp {
 			// If CTRL O
 			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
 				// Open a text file
-				let fname = self.get_desired_path(false);
+				let fname = self.get_desired_path(false, false);
 
 				let fcontent = fs::read_to_string(&fname).expect("Failed to read file");
 
 				self.string = fcontent;
 			}
 
-			// If CTRL S
+			// If managing files
+			let ctrl_n =
+			ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
 			let ctrl_s =
 				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
 			let ctrl_shift_s =
 				ui.input_mut().consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
 
-			if ctrl_s || ctrl_shift_s {
+			if ctrl_n || ctrl_s || ctrl_shift_s {
 				// If "Save As" OR output path not yet specified
-				if ctrl_shift_s || self.outfile.is_none() {
+				if ctrl_shift_s || ctrl_n || self.outfile.is_none() {
 					// Ask where to save to
-					self.get_desired_path(true);
+					self.get_desired_path(true, ctrl_n);
 				}
 
-				// Save to output file
+				// Save to output file, unless using CTRL N to only edit path
+				if ctrl_s || ctrl_shift_s {
+					fs::write(self.outfile.as_ref().unwrap(), &self.string);
+				}
 			}
 		});
 	}
