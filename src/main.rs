@@ -66,16 +66,30 @@ impl MyApp {
 	// Pops up a dialog to open a new file, and then asks
 	// if the selected path should be the new output path
 	fn get_desired_path(&mut self, save: bool) -> String {
-		let fname = if save {
-			tfd::message_box_ok("Bruh 2", "Bruh 2", tfd::MessageBoxIcon::Info);
-			tfd::save_file_dialog(
-				"Save To File", ""
-			)
-		} else {
-			tfd::open_file_dialog(
-				"Load String From File", "", None
-			)
-		}.expect("Failed to load file path");
+		let fname;
+
+		loop {
+			let chosen = if save {
+				tfd::save_file_dialog(
+					"Save To File", ""
+				)
+			} else {
+				tfd::open_file_dialog(
+					"Load String From File", "", None
+				)
+			};
+
+			if chosen.is_some() {
+				fname = chosen.unwrap();
+				break;
+			} else {
+				tfd::message_box_ok(
+					"StringSuite",
+					"Invalid File! Please specify a file to open.",
+					tfd::MessageBoxIcon::Error
+				);
+			};
+		}
 
 		if self.outfile.is_none() || tfd::message_box_yes_no(
 			"StringSuite",
@@ -172,6 +186,7 @@ impl eframe::App for MyApp {
 				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
 			let ctrl_shift_s =
 				ui.input_mut().consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
+
 			if ctrl_s || ctrl_shift_s {
 				// If "Save As" OR output path not yet specified
 				if ctrl_shift_s || self.outfile.is_none() {
