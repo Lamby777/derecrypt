@@ -30,17 +30,17 @@ fn main() {
 }
 
 struct MyApp {
-	_file:	Option<String>,
-	string:	String,
-	args:	Vec<String>
+	outfile:	Option<String>,
+	string:		String,
+	args:		Vec<String>
 }
 
 impl MyApp {
 	pub fn new() -> Self {
 		MyApp {
-			_file:	Some(String::new()),
-			string:	String::new(),
-			args:	vec!["".to_string()],
+			outfile:	Some(String::new()),
+			string:		String::new(),
+			args:		vec![String::new()],
 		}
 	}
 }
@@ -85,10 +85,19 @@ impl eframe::App for MyApp {
 			if ui.input_mut().consume_key(egui::Modifiers::COMMAND, egui::Key::O) {
 				// Open a text file
 				let fname = open_file_dialog(
-					"Load Text From File", "", None
+					"Load String From File", "", None
 				).unwrap();
 
-				let fcontent = fs::read_to_string(fname).unwrap();
+				let fcontent = fs::read_to_string(&fname).unwrap();
+
+				if message_box_yes_no(
+					"String Loader",
+					format!("Replace the current working path with {}?", &fname[..]).as_str(),
+					MessageBoxIcon::Question,
+					YesNo::Yes
+				) == YesNo::Yes {
+					self.outfile = Some(fname);
+				}
 
 				self.string = fcontent;
 			}
