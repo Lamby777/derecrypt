@@ -62,6 +62,32 @@ impl MyApp {
 			None
 		}
 	}
+
+	// Pops up a dialog to open a new file, and then asks
+	// if the selected path should be the new output path
+	fn get_desired_path(&mut self, save: bool) -> String {
+		let fname = if save {
+			tfd::message_box_ok("Bruh 2", "Bruh 2", tfd::MessageBoxIcon::Info);
+			tfd::save_file_dialog(
+				"Save To File", ""
+			)
+		} else {
+			tfd::open_file_dialog(
+				"Load String From File", "", None
+			)
+		}.expect("Failed to load file path");
+
+		if self.outfile.is_none() || tfd::message_box_yes_no(
+			"StringSuite",
+			format!("Replace the current working path with {}?", &fname[..]).as_str(),
+			tfd::MessageBoxIcon::Question,
+			tfd::YesNo::Yes
+		) == tfd::YesNo::Yes {
+			self.outfile = Some(fname.clone());
+		};
+
+		fname
+	}
 }
 
 impl eframe::App for MyApp {
@@ -131,24 +157,29 @@ impl eframe::App for MyApp {
 				ui.add(writebox);
 			});
 
+			// If CTRL O
 			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
 				// Open a text file
-				let fname = tfd::open_file_dialog(
-					"Load String From File", "", None
-				).expect("Failed to load file path");
+				let fname = self.get_desired_path(false);
 
 				let fcontent = fs::read_to_string(&fname).expect("Failed to read file");
 
-				if tfd::message_box_yes_no(
-					"String Loader",
-					format!("Replace the current working path with {}?", &fname[..]).as_str(),
-					tfd::MessageBoxIcon::Question,
-					tfd::YesNo::Yes
-				) == tfd::YesNo::Yes {
-					self.outfile = Some(fname);
+				self.string = fcontent;
+			}
+
+			// If CTRL S
+			let ctrl_s =
+				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
+			let ctrl_shift_s =
+				ui.input_mut().consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
+			if ctrl_s || ctrl_shift_s {
+				// If "Save As" OR output path not yet specified
+				if ctrl_shift_s || self.outfile.is_none() {
+					// Ask where to save to
+					self.get_desired_path(true);
 				}
 
-				self.string = fcontent;
+				// Save to output file
 			}
 		});
 	}
