@@ -6,8 +6,10 @@
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::fs;
 use eframe::egui;
 use egui::*;
+use tinyfiledialogs::*;
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
 
@@ -28,7 +30,7 @@ fn main() {
 }
 
 struct MyApp {
-	file:	Option<String>,
+	_file:	Option<String>,
 	string:	String,
 	args:	Vec<String>
 }
@@ -36,7 +38,7 @@ struct MyApp {
 impl MyApp {
 	pub fn new() -> Self {
 		MyApp {
-			file:	Some(String::new()),
+			_file:	Some(String::new()),
 			string:	String::new(),
 			args:	vec!["".to_string()],
 		}
@@ -70,8 +72,26 @@ impl eframe::App for MyApp {
 			|ui| {
 
 				// Render this stuff in the center
-				ui.text_edit_singleline(&mut self.string);
+				let writebox = TextEdit::multiline(&mut self.string)
+					.font(egui::TextStyle::Monospace) // for cursor height
+					.code_editor()
+					.desired_rows(10)
+					.lock_focus(true)
+					.desired_width(f32::INFINITY);
+				
+				ui.add(writebox);
 			});
+
+			if ui.input_mut().consume_key(egui::Modifiers::COMMAND, egui::Key::O) {
+				// Open a text file
+				let fname = open_file_dialog(
+					"Load Text From File", "", None
+				).unwrap();
+
+				let fcontent = fs::read_to_string(fname).unwrap();
+
+				self.string = fcontent;
+			}
 		});
 	}
 }
