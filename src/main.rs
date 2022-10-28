@@ -5,6 +5,7 @@
 
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+//#![feature(hash_drain_filter)]
 
 use std::{fs, path::Path, collections::HashMap};
 use tinyfiledialogs as tfd;
@@ -157,11 +158,17 @@ impl eframe::App for MyApp {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			if self.open_modals[&WindowTypes::ConvertBase] {
-					Window::new("Convert Base")
-					.show(ctx, |ui| {
-						ui.label("contents");
-					});
+			for wintype in &self.open_modals {
+				if !wintype.1 {continue};
+
+				match wintype.0 {
+					WindowTypes::ConvertBase => {
+						Window::new("Convert Base")
+							.show(ctx, |ui| {
+								ui.label("contents");
+							});
+					}
+				}
 			}
 			
 			ui.heading("Arguments");
