@@ -13,7 +13,8 @@ use eframe::{egui::{*, style::Widgets}};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-const TITLEBAR_HEIGHT: f32 = 24.0;
+const TITLEBAR_HEIGHT:	f32		= 24.0;
+const APP_NAME_STR:		&str	= "Derecrypt";
 
 struct ThemeColors;
 
@@ -35,7 +36,7 @@ fn main() {
 	};
 
 	eframe::run_native(
-		"StringSuite Editor",
+		format!("{} Editor", APP_NAME_STR).as_str(),
 		options,
 		Box::new(|_cc| Box::new(MyApp::new())),
 	);
@@ -100,7 +101,7 @@ impl MyApp {
 				break;
 			} else {
 				tfd::message_box_ok(
-					"StringSuite",
+					APP_NAME_STR,
 					"Invalid File! Please specify a file to open.",
 					tfd::MessageBoxIcon::Error
 				);
@@ -108,7 +109,7 @@ impl MyApp {
 		}
 
 		if self.outfile.is_none() || force_overwrite || tfd::message_box_yes_no(
-			"StringSuite",
+			APP_NAME_STR,
 			format!("Replace the current working path with {}?", &fname[..]).as_str(),
 			tfd::MessageBoxIcon::Question,
 			tfd::YesNo::Yes
@@ -127,9 +128,9 @@ impl eframe::App for MyApp {
 
 	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
 		let titlebar_text = if let Some(v) = self.filename() {
-			format!("StringSuite: {}", v)
+			format!("{}: {}", APP_NAME_STR, v)
 		} else {
-			String::from("StringSuite")
+			String::from(APP_NAME_STR)
 		};
 
 		let visuals = Visuals {
