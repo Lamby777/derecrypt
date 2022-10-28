@@ -10,18 +10,18 @@
 use std::{fs, path::Path, collections::HashMap};
 use tinyfiledialogs as tfd;
 use eframe::{egui::{*, style::Widgets}};
-use strum::IntoEnumIterator; // 0.17.1
-use strum_macros::EnumIter; // 0.17.1
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 const TITLEBAR_HEIGHT: f32 = 24.0;
 
 struct ThemeColors;
 
 impl ThemeColors {
-	const BG_PURPLE:		Color32	= Color32::from_rgb(79, 0, 148);
-	const BG_PURPLE_DEEP:	Color32	= Color32::from_rgb(42, 0, 79);
-	const BG_PURPLE_LIGHT:	Color32	= Color32::from_rgb(142, 24, 240);
-	const BG_PURPLE_DARK:	Color32	= Color32::from_rgb(18, 0, 33);
+	const BG_PURPLE:		Color32	= Color32::from_rgb(79,	0,	148);
+	const BG_PURPLE_DEEP:	Color32	= Color32::from_rgb(42,	0,	79);
+	const BG_PURPLE_LIGHT:	Color32	= Color32::from_rgb(142,	24,	240);
+	const BG_PURPLE_DARK:	Color32	= Color32::from_rgb(18,	0,	33);
 	const TEXT:				Color32 = Color32::WHITE;
 }
 
@@ -187,7 +187,8 @@ impl eframe::App for MyApp {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					self.open_modals.entry(WindowTypes::ConvertBase).and_modify(|val| *val = !*val);
+					self.open_modals.entry(WindowTypes::ConvertBase)
+						.and_modify(|val| *val = !*val);
 				}
 			});
 
@@ -209,7 +210,8 @@ impl eframe::App for MyApp {
 				// Open a text file
 				let fname = self.get_desired_path(false, false);
 
-				let fcontent = fs::read_to_string(&fname).expect("Failed to read file");
+				let fcontent = fs::read_to_string(&fname)
+					.expect("Failed to read file");
 
 				self.string = fcontent;
 			}
@@ -287,7 +289,8 @@ fn custom_window_frame(
 					rect.right_top() - vec2(32.0, 0.0),
 					Vec2::splat(TITLEBAR_HEIGHT)
 				),
-				Button::new(RichText::new("❌").size(TITLEBAR_HEIGHT - 4.0)).frame(false),
+				Button::new(RichText::new("❌")
+					.size(TITLEBAR_HEIGHT - 4.0)).frame(false),
 			);
 
 			if close_button.clicked() {
