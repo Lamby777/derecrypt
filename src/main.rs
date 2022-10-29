@@ -95,6 +95,12 @@ impl Derecrypt {
 		}
 	}
 
+	
+	pub fn toggle_module_visibility(&mut self, wintype: WindowTypes) {
+		self.open_modals.entry(wintype)
+			.and_modify(|val| val.active = !val.active);
+	}
+
 	// Pops up a dialog to open a new file, and then asks
 	// if the selected path should be the new output path
 	fn get_desired_path(&mut self, save: bool, force_overwrite: bool) -> String {
@@ -206,13 +212,11 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					self.open_modals.entry(WindowTypes::ConvertBase)
-						.and_modify(|val| val.active = !val.active);
+					self.toggle_module_visibility(WindowTypes::ConvertBase);
 				}
 
 				if ui.button("Replace").clicked() {
-					self.open_modals.entry(WindowTypes::Replace)
-						.and_modify(|val| val.active = !val.active);
+					self.toggle_module_visibility(WindowTypes::Replace);
 				}
 			});
 
