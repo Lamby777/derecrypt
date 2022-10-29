@@ -15,6 +15,7 @@ use strum_macros::EnumIter;
 
 const TITLEBAR_HEIGHT:	f32		= 24.0;
 const APP_NAME_STR:		&str	= "Derecrypt";
+const DC_VERSION:		&str	= env!("CARGO_PKG_VERSION");
 
 struct ThemeColors;
 
@@ -130,7 +131,7 @@ impl eframe::App for MyApp {
 		let titlebar_text = if let Some(v) = self.filename() {
 			format!("{}: {}", APP_NAME_STR, v)
 		} else {
-			String::from(APP_NAME_STR)
+			format!("{} v{}", APP_NAME_STR, DC_VERSION)
 		};
 
 		let visuals = Visuals {
