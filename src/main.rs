@@ -49,9 +49,30 @@ enum WindowTypes {
 	Replace,
 }
 
+struct DerecryptModuleParams {
+	strings:	Option<Vec<String>>,
+	ints:		Option<Vec<i64>>,
+	bools:		Option<Vec<bool>>,
+}
+
+impl DerecryptModuleParams {
+	pub fn new(
+		strings:	usize,
+		ints:		usize,
+		bools:		usize,
+	) -> DerecryptModuleParams {
+
+		DerecryptModuleParams {
+			strings:	if strings > 0	{ Some(vec![String::new();	strings	]) } else { None },
+			ints:		if ints > 0		{ Some(vec![0i64;			ints	]) } else { None },
+			bools:		if bools > 0	{ Some(vec![false;			bools	]) } else { None },
+		}
+	}
+}
+
 struct DerecryptModule {
 	active:		bool,
-	params:		Vec<String>
+	params:		DerecryptModuleParams,
 }
 
 struct Derecrypt {
@@ -66,15 +87,15 @@ impl Derecrypt {
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			// Number of inputs for 
-			let args_count = match wintype {
-				WindowTypes::ConvertBase	=> 2,
-    			WindowTypes::Replace		=> 2,
+			// Number of inputs for each type
+			let argc = match wintype {
+				WindowTypes::ConvertBase	=> (2, 0, 0),
+    			WindowTypes::Replace		=> (2, 0, 0),
 			};
 
 			modals_map.insert(wintype, DerecryptModule {
 				active: false,
-				params: vec![String::new(); args_count],
+				params: DerecryptModuleParams::new(argc.0, argc.1, argc.2),
 			});
 		}
 
