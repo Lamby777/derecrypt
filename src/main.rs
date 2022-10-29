@@ -39,35 +39,49 @@ fn main() {
 	eframe::run_native(
 		format!("{} Editor", APP_NAME_STR).as_str(),
 		options,
-		Box::new(|_cc| Box::new(MyApp::new())),
+		Box::new(|_cc| Box::new(Derecrypt::new())),
 	);
 }
 
 #[derive(Eq, Hash, PartialEq, Copy, Clone, EnumIter)]
 enum WindowTypes {
 	ConvertBase,
+	Replace,
 }
 
-struct MyApp {
-	open_modals:	HashMap<WindowTypes, bool>,
+struct DerecryptModule {
+	active:		bool,
+	params:		Vec<String>
+}
+
+struct Derecrypt {
+	open_modals:	HashMap<WindowTypes, DerecryptModule>,
 	outfile:		Option<String>,
 	string:			String,
-	args:			Vec<String>
 }
 
-impl MyApp {
+impl Derecrypt {
 	pub fn new() -> Self {
 		let mut modals_map = HashMap::new();
-		
+
+		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			modals_map.insert(wintype, false);
+			// Number of inputs for 
+			let args_count = match wintype {
+				WindowTypes::ConvertBase	=> 2,
+    			WindowTypes::Replace		=> 2,
+			};
+
+			modals_map.insert(wintype, DerecryptModule {
+				active: false,
+				params: vec![String::new(); args_count],
+			});
 		}
 
-		MyApp {
+		Derecrypt {
 			open_modals:	modals_map,
 			outfile:		None,
 			string:			String::new(),
-			args:			vec![String::new()],
 		}
 	}
 
@@ -122,7 +136,7 @@ impl MyApp {
 	}
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for Derecrypt {
 	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
 		Rgba::TRANSPARENT // Make sure we don't paint anything behind the rounded corners
 	}
@@ -161,23 +175,26 @@ impl eframe::App for MyApp {
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for wintype in &self.open_modals {
-				if !wintype.1 {continue};
+				if !(wintype.1.active) {continue};
 
 				match wintype.0 {
-					WindowTypes::ConvertBase => {
+					WindowTypes::ConvertBase	=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.label("contents");
+							});
+					},
+
+					WindowTypes::Replace		=> {
+						Window::new("Replace / Remove")
+							.show(ctx, |ui| {
+								ui.add(TextEdit::singleline(&mut ""));
 							});
 					}
 				}
 			}
 			
 			ui.heading("Arguments");
-
-			for arg_i in 0..self.args.len() {
-				ui.add(TextEdit::singleline(&mut self.args[arg_i]));
-			}
 
 			ui.horizontal(|ui| {
 				if ui.button("Strip").clicked() {
@@ -190,7 +207,12 @@ impl eframe::App for MyApp {
 
 				if ui.button("Conv Base").clicked() {
 					self.open_modals.entry(WindowTypes::ConvertBase)
-						.and_modify(|val| *val = !*val);
+						.and_modify(|val| val.active = !val.active);
+				}
+
+				if ui.button("Replace").clicked() {
+					self.open_modals.entry(WindowTypes::Replace)
+						.and_modify(|val| val.active = !val.active);
 				}
 			});
 
