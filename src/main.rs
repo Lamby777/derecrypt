@@ -43,40 +43,24 @@ fn main() {
 	);
 }
 
-#[derive(Eq, Hash, PartialEq, Copy, Clone, EnumIter)]
+struct DcWindow_ConvertBase {
+}
+
+#[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
 enum WindowTypes {
-	ConvertBase,
-	Replace,
+	ConvertBase	{from:	u8,			to:	u8							},
+	Replace		{from:	String,		to:	String,		regex_mode:	bool},
 }
 
-struct DerecryptModuleParams {
-	strings:	Option<Vec<String>>,
-	ints:		Option<Vec<i64>>,
-	bools:		Option<Vec<bool>>,
-}
-
-impl DerecryptModuleParams {
-	pub fn new(
-		strings:	usize,
-		ints:		usize,
-		bools:		usize,
-	) -> DerecryptModuleParams {
-
-		DerecryptModuleParams {
-			strings:	if strings > 0	{ Some(vec![String::new();	strings	]) } else { None },
-			ints:		if ints > 0		{ Some(vec![0i64;			ints	]) } else { None },
-			bools:		if bools > 0	{ Some(vec![false;			bools	]) } else { None },
-		}
-	}
-}
-
-struct DerecryptModule {
+// DcM is short for DerecryptModule
+// Got tired of writing verbose struct/enum/variable names,
+// so if you see "DcM" in the code, just think of the app's modules
+struct DcM {
 	active:		bool,
-	params:		DerecryptModuleParams,
 }
 
 struct Derecrypt {
-	open_modals:	HashMap<WindowTypes, DerecryptModule>,
+	open_modals:	HashMap<WindowTypes, DcM>,
 	outfile:		Option<String>,
 	string:			String,
 }
@@ -87,15 +71,8 @@ impl Derecrypt {
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			// Number of inputs for each type
-			let argc = match wintype {
-				WindowTypes::ConvertBase	=> (2, 0, 0),
-    			WindowTypes::Replace		=> (2, 0, 0),
-			};
-
-			modals_map.insert(wintype, DerecryptModule {
-				active: false,
-				params: DerecryptModuleParams::new(argc.0, argc.1, argc.2),
+			modals_map.insert(wintype, DcM {
+				active:		false,
 			});
 		}
 
@@ -201,21 +178,25 @@ impl eframe::App for Derecrypt {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for wintype in &self.open_modals {
-				if !(wintype.1.active) {continue};
+			for wintype in &mut self.open_modals {
+				let module = wintype.1;
+
+				if !(module.active) {continue};
 
 				match wintype.0 {
-					WindowTypes::ConvertBase	=> {
+					WindowTypes::ConvertBase {from, to}	=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.label("contents");
 							});
 					},
 
-					WindowTypes::Replace		=> {
+					WindowTypes::Replace {from, to, regex_mode}		=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
-								ui.add(TextEdit::singleline(&mut ""));
+								ui.add(TextEdit::singleline(
+									&mut ""
+								));
 							});
 					}
 				}
@@ -233,7 +214,9 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					self.toggle_module_visibility(WindowTypes::ConvertBase);
+					self.toggle_module_visibility(
+						WindowTypes::ConvertBase
+					);
 				}
 
 				if ui.button("Replace").clicked() {
