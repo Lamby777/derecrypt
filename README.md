@@ -12,7 +12,7 @@ Made for me and my teammates' ease of use in CyberStart and RUSecure.
 ---
 
 Formerly called StringSuite, but apparently
-[that's already a C++ string library's name](https://github.com/Loara/StringSuite), so I changed it to be more unique.
-The name of the project in certain places like GitHub or
-`Cargo.toml` will still stay as `StringSuite` to
-stay consistent.
+[that's already a C++ string library's name](https://github.com/Loara/StringSuite),
+so I changed it to be more unique. The name of the project
+in certain places like GitHub or `Cargo.toml` will still
+stay as `StringSuite` to be consistent.
