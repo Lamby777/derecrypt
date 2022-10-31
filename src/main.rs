@@ -43,13 +43,10 @@ fn main() {
 	);
 }
 
-struct DcWindow_ConvertBase {
-}
-
 #[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
 enum WindowTypes {
-	ConvertBase	{from:	u8,			to:	u8							},
-	Replace		{from:	String,		to:	String,		regex_mode:	bool},
+	ConvertBase,
+	Replace,
 }
 
 // DcM is short for DerecryptModule
@@ -184,14 +181,14 @@ impl eframe::App for Derecrypt {
 				if !(module.active) {continue};
 
 				match wintype.0 {
-					WindowTypes::ConvertBase {from, to}	=> {
+					WindowTypes::ConvertBase	=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.label("contents");
 							});
 					},
 
-					WindowTypes::Replace {from, to, regex_mode}		=> {
+					WindowTypes::Replace		=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
 								ui.add(TextEdit::singleline(
