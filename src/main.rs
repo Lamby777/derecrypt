@@ -49,17 +49,11 @@ enum WindowTypes {
 	Replace,
 }
 
-enum DcMParams {
-	ConvertBase	{from:	u64,	to:	u64							},
-	Replace		{from:	String,	to:	String,	regex_mode:	bool	},
-}
-
 // DcM is short for DerecryptModule
 // Got tired of writing verbose struct/enum/variable names,
 // so if you see "DcM" in the code, just think of the app's modules
 struct DcM {
 	active:		bool,
-	params:		DcMParams,
 }
 
 struct Derecrypt {
@@ -74,11 +68,8 @@ impl Derecrypt {
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			let params = DcMParams::[wintype as usize]();
-			
 			modals_map.insert(wintype, DcM {
 				active:		false,
-				params:		params,
 			});
 		}
 
