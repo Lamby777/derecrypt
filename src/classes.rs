@@ -21,20 +21,37 @@ impl ThemeColors {
 }
 
 #[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
-enum WindowTypes {
+pub enum WindowTypes {
 	ConvertBase,
 	Replace,
 }
 
-// DcM is short for DerecryptModule
-// Got tired of writing verbose struct/enum/variable names,
-// so if you see "DcM" in the code, just think of the app's modules
-struct DcM {
+pub mod DcModules {
+	use crate::DcModBase;
+
+	pub struct ConvertBase {
+		pub module:	DcModBase,
+		pub	from:	u64,
+		pub	to:		u64,
+	}
+}
+
+impl DcMod for DcModules::ConvertBase {
+	fn module(&self) -> &DcModBase {
+		&self.module
+	}
+}
+
+pub trait DcMod {
+	fn module(&self) -> &DcModBase;
+}
+
+pub struct DcModBase {
 	pub	active:		bool,
 }
 
 pub struct Derecrypt {
-	pub	open_modals:	HashMap<WindowTypes, DcM>,
+	pub	open_modals:	HashMap<WindowTypes, DcModBase>,
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
@@ -45,7 +62,7 @@ impl Derecrypt {
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			modals_map.insert(wintype, DcM {
+			modals_map.insert(wintype, DcModBase {
 				active:		false,
 			});
 		}
