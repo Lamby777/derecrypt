@@ -26,19 +26,21 @@ pub enum WindowTypes {
 	Replace,
 }
 
-pub mod DcModules {
-	use crate::DcModBase;
+pub mod dc_modules {
+	use super::{DcModBase, DcMod};
 
 	pub struct ConvertBase {
 		pub module:	DcModBase,
 		pub	from:	u64,
 		pub	to:		u64,
 	}
-}
 
-impl DcMod for DcModules::ConvertBase {
-	fn module(&self) -> &DcModBase {
-		&self.module
+	
+
+	impl DcMod for ConvertBase {
+		fn module(&self) -> &DcModBase {
+			&self.module
+		}
 	}
 }
 
