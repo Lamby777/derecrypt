@@ -22,24 +22,22 @@ impl ThemeColors {
 
 #[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
 pub enum WindowTypes {
-	ConvertBase,
-	Replace,
+	ConvertBase	{from:	u64,	to:	u64					},
+	Replace		{from:	String,	to:	String,	regex:	bool},
 }
 
-pub mod dc_modules {
-	use super::{DcModBase, DcMod};
-
-	pub struct ConvertBase {
-		pub module:	DcModBase,
-		pub	from:	u64,
-		pub	to:		u64,
+impl DcMod for WindowTypes {
+	fn module(&self) {
+		&self.dcm
 	}
+}
 
-	
-
-	impl DcMod for ConvertBase {
-		fn module(&self) -> &DcModBase {
-			&self.module
+impl Into<usize> for WindowTypes {
+	fn into(self) -> usize {
+        match self {
+			WindowTypes::ConvertBase	{from,	to}			=> 0,
+			WindowTypes::Replace		{from,	to, regex}	=> 1,
+			_												=> panic!()
 		}
 	}
 }
@@ -53,24 +51,22 @@ pub struct DcModBase {
 }
 
 pub struct Derecrypt {
-	pub	open_modals:	HashMap<WindowTypes, DcModBase>,
+	pub	open_modals:	Vec<WindowTypes>,
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
 
 impl Derecrypt {
 	pub fn new() -> Self {
-		let mut modals_map = HashMap::new();
+		let mut modals = vec![];
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			modals_map.insert(wintype, DcModBase {
-				active:		false,
-			});
+			modals.push(wintype);
 		}
 
 		Derecrypt {
-			open_modals:	modals_map,
+			open_modals:	modals,
 			outfile:		None,
 			string:			String::new(),
 		}
@@ -87,9 +83,9 @@ impl Derecrypt {
 	}
 
 	
-	pub fn toggle_module_visibility(&mut self, wintype: WindowTypes) {
-		self.open_modals.entry(wintype)
-			.and_modify(|val| val.active = !val.active);
+	pub fn toggle_module_visibility(&mut self, winid: usize) {
+		let mut module = self.open_modals[winid].module;
+		val.active = !val.active;
 	}
 
 	// Pops up a dialog to open a new file, and then asks

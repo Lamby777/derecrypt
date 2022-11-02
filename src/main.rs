@@ -79,14 +79,14 @@ impl eframe::App for Derecrypt {
 				if !(module.active) {continue};
 
 				match wintype.0 {
-					WindowTypes::ConvertBase	=> {
+					WindowTypes::ConvertBase	{from,	to}				=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.label("contents");
 							});
 					},
 
-					WindowTypes::Replace		=> {
+					WindowTypes::Replace		{from,	to,	regex	}	=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
 								ui.add(TextEdit::singleline(
@@ -107,13 +107,11 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					self.toggle_module_visibility(
-						WindowTypes::ConvertBase
-					);
+					self.toggle_module_visibility(0);
 				}
 
 				if ui.button("Replace").clicked() {
-					self.toggle_module_visibility(WindowTypes::Replace);
+					self.toggle_module_visibility(1);
 				}
 			});
 
