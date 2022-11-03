@@ -26,16 +26,6 @@ pub enum WindowTypes {
 	Replace		{from:	String,	to:	String,	regex:	bool},
 }
 
-impl Into<usize> for WindowTypes {
-	fn into(self) -> usize {
-        match self {
-			WindowTypes::ConvertBase	{from,	to}			=> 0,
-			WindowTypes::Replace		{from,	to, regex}	=> 1,
-			_												=> panic!()
-		}
-	}
-}
-
 pub struct DcModBase {
 	pub	active:		bool,
 	pub	params:		WindowTypes,

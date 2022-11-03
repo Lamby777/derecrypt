@@ -74,20 +74,20 @@ impl eframe::App for Derecrypt {
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for pair in &mut self.open_modals.iter() {
-				let (des, dcmod) = pair;
+				let (_des, dcmod) = pair;
 				let params = &dcmod.params;
 
 				if !(dcmod.active) {continue};
 
 				match params {
-					WindowTypes::ConvertBase	{from,	to}				=> {
+					WindowTypes::ConvertBase	{from: _,	to: _}				=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.label("contents");
 							});
 					},
 
-					WindowTypes::Replace		{from,	to,	regex	}	=> {
+					WindowTypes::Replace		{from: _,	to: _,	regex: _}	=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
 								ui.add(TextEdit::singleline(
