@@ -26,12 +26,6 @@ pub enum WindowTypes {
 	Replace		{from:	String,	to:	String,	regex:	bool},
 }
 
-impl DcMod for WindowTypes {
-	fn module(&self) {
-		&self.dcm
-	}
-}
-
 impl Into<usize> for WindowTypes {
 	fn into(self) -> usize {
         match self {
@@ -42,16 +36,13 @@ impl Into<usize> for WindowTypes {
 	}
 }
 
-pub trait DcMod {
-	fn module(&self) -> &DcModBase;
-}
-
 pub struct DcModBase {
 	pub	active:		bool,
+	pub	params:		WindowTypes,
 }
 
 pub struct Derecrypt {
-	pub	open_modals:	Vec<WindowTypes>,
+	pub	open_modals:	Vec<DcModBase>,
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
@@ -62,7 +53,12 @@ impl Derecrypt {
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			modals.push(wintype);
+			modals.push(
+				DcModBase {
+					active:	false,
+					params:	wintype,
+				}
+			);
 		}
 
 		Derecrypt {
@@ -84,8 +80,8 @@ impl Derecrypt {
 
 	
 	pub fn toggle_module_visibility(&mut self, winid: usize) {
-		let mut module = self.open_modals[winid].module;
-		val.active = !val.active;
+		let mut module = &mut self.open_modals[winid];
+		module.active = !module.active;
 	}
 
 	// Pops up a dialog to open a new file, and then asks

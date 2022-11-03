@@ -74,11 +74,11 @@ impl eframe::App for Derecrypt {
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for wintype in &mut self.open_modals {
-				let module = wintype.1;
+				let params = &wintype.params;
 
-				if !(module.active) {continue};
+				if !(wintype.active) {continue};
 
-				match wintype.0 {
+				match params {
 					WindowTypes::ConvertBase	{from,	to}				=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
