@@ -6,7 +6,7 @@ use tinyfiledialogs as tfd;
 use eframe::{egui::*};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use std::{path::Path, collections::HashMap};
+use std::{path::Path, collections::HashMap, mem::{Discriminant, self}};
 
 use super::consts::*;
 
@@ -42,18 +42,20 @@ pub struct DcModBase {
 }
 
 pub struct Derecrypt {
-	pub	open_modals:	Vec<DcModBase>,
+	pub	open_modals:	HashMap<Discriminant<WindowTypes>, DcModBase>,
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
 
 impl Derecrypt {
 	pub fn new() -> Self {
-		let mut modals = vec![];
+		let mut modals = HashMap::new();
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
-			modals.push(
+			modals.insert(
+				mem::discriminant(&wintype),
+
 				DcModBase {
 					active:	false,
 					params:	wintype,
@@ -79,9 +81,9 @@ impl Derecrypt {
 	}
 
 	
-	pub fn toggle_module_visibility(&mut self, winid: usize) {
-		let mut module = &mut self.open_modals[winid];
-		module.active = !module.active;
+	pub fn toggle_module_visibility(&mut self, winid: Discriminant<WindowTypes>) {
+		self.open_modals.entry(winid)
+			.and_modify(|v| v.active = !v.active);
 	}
 
 	// Pops up a dialog to open a new file, and then asks

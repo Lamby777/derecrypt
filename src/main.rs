@@ -7,7 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 //#![feature(hash_drain_filter)]
 
-use std::fs;
+use std::{mem, fs};
 use eframe::{egui::{*, style::Widgets}};
 
 // Keep all the definition stuff in a separate file to
@@ -73,10 +73,11 @@ impl eframe::App for Derecrypt {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for wintype in &mut self.open_modals {
-				let params = &wintype.params;
+			for pair in &mut self.open_modals.iter() {
+				let (des, dcmod) = pair;
+				let params = &dcmod.params;
 
-				if !(wintype.active) {continue};
+				if !(dcmod.active) {continue};
 
 				match params {
 					WindowTypes::ConvertBase	{from,	to}				=> {
@@ -107,11 +108,19 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Conv Base").clicked() {
-					self.toggle_module_visibility(0);
+					self.toggle_module_visibility(
+						mem::discriminant(
+							&WindowTypes::ConvertBase {from: 0, to: 0}
+						)
+					);
 				}
 
 				if ui.button("Replace").clicked() {
-					self.toggle_module_visibility(1);
+					self.toggle_module_visibility(
+						mem::discriminant(
+							&WindowTypes::Replace {from: String::from(""), to: String::from(""), regex: false}
+						)
+					);
 				}
 			});
 
