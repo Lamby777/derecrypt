@@ -107,7 +107,7 @@ impl eframe::App for Derecrypt {
 									// Replace stuff
 								}
 							});
-					}
+					},
 
 
 				}
@@ -120,6 +120,10 @@ impl eframe::App for Derecrypt {
 
 				if ui.button("Deflate").clicked() {
 					self.string.retain(|c| !c.is_whitespace());
+				}
+
+				if ui.button("Length").clicked() {
+					self.string = self.string.len().to_string();
 				}
 
 				if ui.button("Conv Base").clicked() {
