@@ -82,10 +82,13 @@ impl eframe::App for Derecrypt {
 				match params {
 					// Code that runs for each string processing module window
 					
-					WindowTypes::ConvertBase	{from: _,	to: _}				=> {
+					WindowTypes::ConvertBase	{
+						ref	mut	from,
+						ref	mut	to,
+					}	=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
-								ui.label("contents");
+								//
 							});
 					},
 
@@ -99,8 +102,16 @@ impl eframe::App for Derecrypt {
 						
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
-								ui.text_edit_singleline(from);
-								ui.text_edit_singleline(to);
+								ui.add(
+									TextEdit::singleline(from)
+										.hint_text("Replace This...")
+								);
+
+								ui.add(
+									TextEdit::singleline(from)
+										.hint_text("With This!")
+								);
+
 								ui.checkbox(regex, "Match via RegEx");
 						
 								if dcm_run(ui) {
