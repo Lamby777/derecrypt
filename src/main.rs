@@ -73,9 +73,9 @@ impl eframe::App for Derecrypt {
 		ctx.set_visuals(visuals);
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for pair in &mut self.open_modals.iter() {
-				let (_des, dcmod) = pair;
-				let params = &dcmod.params;
+			for pair in &mut self.open_modals.iter_mut() {
+				let dcmod: &mut DcModBase = pair.1;
+				let params = &mut dcmod.params;
 
 				if !(dcmod.active) {continue};
 
@@ -87,11 +87,11 @@ impl eframe::App for Derecrypt {
 							});
 					},
 
-					WindowTypes::Replace		{from: _,	to: _,	regex: _}	=> {
+					WindowTypes::Replace		{ref mut from,	to: _,	regex: _}	=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
 								ui.add(TextEdit::singleline(
-									&mut ""
+									from
 								));
 							});
 					}
