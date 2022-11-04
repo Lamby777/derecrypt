@@ -100,8 +100,6 @@ impl eframe::App for Derecrypt {
 										*from = 2;
 									}
 
-									// If string empty,
-
 									let res = u128::from_str_radix(
 										&self.string, *from
 									);
