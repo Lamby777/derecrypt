@@ -36,6 +36,13 @@ fn main() {
 	);
 }
 
+// code that has its own module, but might be reused in other modules
+mod dcmod_scripts {
+	pub fn deflate(s: &mut String) {
+		s.retain(|c| !c.is_whitespace());
+	}
+}
+
 impl eframe::App for Derecrypt {
 	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
 		Rgba::TRANSPARENT // Make sure we don't paint anything behind the rounded corners
@@ -81,8 +88,6 @@ impl eframe::App for Derecrypt {
 				if !(dcmod.active) {continue};
 
 				match params {
-					// Code that runs for each string processing module window
-					
 					WindowTypes::ConvertBase	{
 						ref	mut	from,
 					}	=> {
@@ -99,6 +104,9 @@ impl eframe::App for Derecrypt {
 									if !(2..=36).contains(from) {
 										*from = 2;
 									}
+
+									// Remove whitespace (usually placed by accident)
+									dcmod_scripts::deflate(&mut self.string);
 
 									let res = u128::from_str_radix(
 										&self.string, *from
@@ -171,7 +179,7 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Deflate").clicked() {
-					self.string.retain(|c| !c.is_whitespace());
+					dcmod_scripts::deflate(&mut self.string);
 				}
 
 				if ui.button("Length").clicked() {
