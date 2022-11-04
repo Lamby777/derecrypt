@@ -80,6 +80,8 @@ impl eframe::App for Derecrypt {
 				if !(dcmod.active) {continue};
 
 				match params {
+					// Code that runs for each string processing module window
+					
 					WindowTypes::ConvertBase	{from: _,	to: _}				=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
@@ -87,14 +89,27 @@ impl eframe::App for Derecrypt {
 							});
 					},
 
-					WindowTypes::Replace		{ref mut from,	to: _,	regex: _}	=> {
+
+
+					WindowTypes::Replace		{
+						ref	mut	from,
+						ref	mut	to,
+						ref	mut	regex
+					}	=> {
+						
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
-								ui.add(TextEdit::singleline(
-									from
-								));
+								ui.text_edit_singleline(from);
+								ui.text_edit_singleline(to);
+								ui.checkbox(regex, "Match via RegEx");
+						
+								if dcm_run(ui) {
+									// Replace stuff
+								}
 							});
 					}
+
+
 				}
 			}
 
@@ -251,4 +266,9 @@ fn custom_window_frame(
 			let mut content_ui = ui.child_ui(content_rect, *ui.layout());
 			add_contents(&mut content_ui);
 		});
+}
+
+// Create and check for click on a module's main run button
+fn dcm_run (ui: &mut Ui) -> bool {
+	ui.button("Run").clicked()
 }
