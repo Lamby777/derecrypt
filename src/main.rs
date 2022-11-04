@@ -108,7 +108,7 @@ impl eframe::App for Derecrypt {
 								);
 
 								ui.add(
-									TextEdit::singleline(from)
+									TextEdit::singleline(to)
 										.hint_text("With This!")
 								);
 
