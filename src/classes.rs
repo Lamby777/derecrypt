@@ -22,7 +22,7 @@ impl ThemeColors {
 
 #[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
 pub enum WindowTypes {
-	ConvertBase	{from:	u64,	to:	u64					},
+	ConvertBase	{from:	u32,							},
 	Replace		{from:	String,	to:	String,	regex:	bool},
 }
 

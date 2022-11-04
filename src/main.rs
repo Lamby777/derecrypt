@@ -84,11 +84,22 @@ impl eframe::App for Derecrypt {
 					
 					WindowTypes::ConvertBase	{
 						ref	mut	from,
-						ref	mut	to,
 					}	=> {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
-								//
+								ui.add(
+									Slider::new(from, 2..=36)
+										.prefix("From ")
+								);
+
+								// Run module
+								if dcm_run(ui) {
+									let res = u32::from_str_radix(
+										&self.string, *from
+									).unwrap();
+									
+									self.string = res.to_string();
+								}
 							});
 					},
 
@@ -140,7 +151,7 @@ impl eframe::App for Derecrypt {
 				if ui.button("Conv Base").clicked() {
 					self.toggle_module_visibility(
 						mem::discriminant(
-							&WindowTypes::ConvertBase {from: 0, to: 0}
+							&WindowTypes::ConvertBase {from: 0}
 						)
 					);
 				}
