@@ -39,6 +39,10 @@ mod dcmod_scripts {
 	pub fn deflate(s: &mut String) {
 		s.retain(|c| !c.is_whitespace());
 	}
+
+	pub fn replace(s: &mut String, old: &str, new: &str) {
+		*s = s[..].replace(old, new);
+	}
 }
 
 impl eframe::App for Derecrypt {
@@ -160,7 +164,7 @@ impl eframe::App for Derecrypt {
 								ui.checkbox(regex, "Match via RegEx");
 						
 								if dcm_run(ui) {
-									self.string = self.string[..].replace(&from[..], &to[..]);
+									dcmod_scripts::replace(&mut self.string, &from[..], &to[..]);
 								}
 							});
 					},
