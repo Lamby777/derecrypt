@@ -117,7 +117,7 @@ impl eframe::App for Derecrypt {
 											core::num::IntErrorKind::PosOverflow => {
 												tfd::message_box_ok(
 													APP_NAME_STR,
-													"Attempting to calculate this caused\
+													"Attempting to calculate this caused \
 													a positive integer overflow.",
 													tfd::MessageBoxIcon::Error
 												);
