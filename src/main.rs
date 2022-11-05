@@ -41,7 +41,7 @@ mod dcmod_scripts {
 	}
 
 	pub fn replace(s: &mut String, old: &str, new: &str) {
-		*s = s[..].replace(old, new);
+		*s = s.as_str().replace(old, new);
 	}
 }
 
@@ -164,7 +164,11 @@ impl eframe::App for Derecrypt {
 								ui.checkbox(regex, "Match via RegEx");
 						
 								if dcm_run(ui) {
-									dcmod_scripts::replace(&mut self.string, &from[..], &to[..]);
+									dcmod_scripts::replace(
+										&mut self.string,
+										from.as_str(),
+										to.as_str()
+									);
 								}
 							});
 					},

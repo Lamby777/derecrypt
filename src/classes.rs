@@ -106,7 +106,8 @@ impl Derecrypt {
 
 		if self.outfile.is_none() || force_overwrite || tfd::message_box_yes_no(
 			APP_NAME_STR,
-			format!("Replace the current working path with {}?", &fname[..]).as_str(),
+			format!("Replace the current working path with {}?",
+								fname.as_str()).as_str(),
 			tfd::MessageBoxIcon::Question,
 			tfd::YesNo::Yes
 		) == tfd::YesNo::Yes {
