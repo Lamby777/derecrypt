@@ -5,14 +5,12 @@
 
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-//#![feature(hash_drain_filter)]
 
 use std::{mem, fs};
 use eframe::{egui::{*, style::Widgets}};
 use tinyfiledialogs as tfd;
 
-// Keep all the definition stuff in a separate file to
-// make it easier to read this one
+// OOP definitions and constants
 mod consts;
 use consts::*;
 
@@ -45,7 +43,7 @@ mod dcmod_scripts {
 
 impl eframe::App for Derecrypt {
 	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
-		Rgba::TRANSPARENT // Make sure we don't paint anything behind the rounded corners
+		Rgba::TRANSPARENT
 	}
 
 	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
@@ -103,7 +101,7 @@ impl eframe::App for Derecrypt {
 										*from = 2;
 									}
 
-									// Remove whitespace (usually placed by accident)
+									// Deflate accidental whitespace
 									dcmod_scripts::deflate(&mut self.string);
 
 									let res = u128::from_str_radix(
@@ -162,7 +160,6 @@ impl eframe::App for Derecrypt {
 								ui.checkbox(regex, "Match via RegEx");
 						
 								if dcm_run(ui) {
-									// Replace stuff
 									self.string = self.string[..].replace(&from[..], &to[..]);
 								}
 							});
@@ -205,10 +202,8 @@ impl eframe::App for Derecrypt {
 			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
 			|ui| {
 				ScrollArea::vertical().always_show_scroll(true).show(ui, |ui| {
-
-					// Render this stuff in the center
 					let writebox = TextEdit::multiline(&mut self.string)
-						.font(TextStyle::Monospace) // for cursor height
+						.font(TextStyle::Monospace)
 						.code_editor()
 						.lock_focus(true)
 						.desired_width(f32::INFINITY);
@@ -310,7 +305,7 @@ fn custom_window_frame(
 				frame.close();
 			}
 
-			// Interact with the title bar (drag to move window):
+			// Draggable title bar
 			let title_bar_rect = {
 				let mut rect = rect;
 				rect.max.y = rect.min.y + TITLEBAR_HEIGHT;
