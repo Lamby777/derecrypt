@@ -54,8 +54,8 @@ impl eframe::App for Derecrypt {
 		} else {
 			format!("{} v{}", APP_NAME_STR, DC_VERSION)
 		};
-
-		let visuals = Visuals {
+		
+		ctx.set_visuals(Visuals {
 			resize_corner_size:		4.0,
 			hyperlink_color:		ThemeColors::BG_PURPLE_LIGHT,
 			faint_bg_color:			ThemeColors::BG_PURPLE_LIGHT,
@@ -76,9 +76,7 @@ impl eframe::App for Derecrypt {
 			},
 		
 			..Visuals::dark()
-		};
-		
-		ctx.set_visuals(visuals);
+		});
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for pair in &mut self.open_modals.iter_mut() {
@@ -261,9 +259,10 @@ fn custom_window_frame(
 	title: &str,
 	add_contents: impl FnOnce(&mut Ui),
 ) {
-	let text_color		= ctx.style().visuals.text_color();
-	let window_stroke	= ctx.style().visuals.window_stroke();
-	let window_fill		= ctx.style().visuals.window_fill();
+	let vis				= &ctx.style().visuals;
+	let text_color		= vis.text_color();
+	let window_stroke	= vis.window_stroke();
+	let window_fill		= vis.window_fill();
 
 	CentralPanel::default()
 		.frame(Frame::none())
