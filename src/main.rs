@@ -165,6 +165,7 @@ impl eframe::App for Derecrypt {
 						
 								if dcm_run(ui) {
 									// Replace stuff
+									self.string = self.string[..].replace(&from[..], &to[..]);
 								}
 							});
 					},
