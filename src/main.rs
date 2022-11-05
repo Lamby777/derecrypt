@@ -206,15 +206,17 @@ impl eframe::App for Derecrypt {
 
 			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
 			|ui| {
+				ScrollArea::vertical().always_show_scroll(true).show(ui, |ui| {
 
-				// Render this stuff in the center
-				let writebox = TextEdit::multiline(&mut self.string)
-					.font(TextStyle::Monospace) // for cursor height
-					.code_editor()
-					.lock_focus(true)
-					.desired_width(f32::INFINITY);
-				
-				ui.add(writebox);
+					// Render this stuff in the center
+					let writebox = TextEdit::multiline(&mut self.string)
+						.font(TextStyle::Monospace) // for cursor height
+						.code_editor()
+						.lock_focus(true)
+						.desired_width(f32::INFINITY);
+					
+					ui.add(writebox);
+				});
 			});
 
 			// If CTRL O
