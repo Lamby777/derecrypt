@@ -20,7 +20,7 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-#[derive(Eq, Hash, PartialEq, Clone, EnumIter)]
+#[derive(EnumIter)]
 pub enum WindowTypes {
 	ConvertBase	{from:	u32,							},
 	Replace		{from:	String,	to:	String,	regex:	bool},
