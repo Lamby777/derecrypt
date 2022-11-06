@@ -81,13 +81,31 @@ impl eframe::App for Derecrypt {
 		});
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for pair in &mut self.open_modals.iter_mut() {
+			for pair in &mut self.open_modals.clone().iter_mut() {
 				let dcmod: &mut DcModBase = pair.1;
 				let params = &mut dcmod.params;
 
 				if !(dcmod.active) {continue};
 
 				match params {
+					WindowTypes::ModContainer	=> {
+						Window::new("The Toolbox")
+							.show(ctx, |ui| {
+
+								if ui.button("Length").clicked() {
+									self.string = self.string.len().to_string();
+								}
+
+								if ui.button("Conv Base").clicked() {
+									self.toggle_module_visibility(
+										mem::discriminant(
+											&WindowTypes::ConvertBase {from: 0}
+										)
+									);
+								}
+						});
+					},
+
 					WindowTypes::ConvertBase	{
 						ref	mut	from,
 					}	=> {
@@ -178,24 +196,20 @@ impl eframe::App for Derecrypt {
 			}
 
 			ui.horizontal(|ui| {
+				if ui.button("TOOLBOX").clicked() {
+					self.toggle_module_visibility(
+						mem::discriminant(
+							&WindowTypes::ModContainer
+						)
+					);
+				}
+
 				if ui.button("Strip").clicked() {
 					self.string = self.string.trim().to_string();
 				}
 
 				if ui.button("Deflate").clicked() {
 					dcmod_scripts::deflate(&mut self.string);
-				}
-
-				if ui.button("Length").clicked() {
-					self.string = self.string.len().to_string();
-				}
-
-				if ui.button("Conv Base").clicked() {
-					self.toggle_module_visibility(
-						mem::discriminant(
-							&WindowTypes::ConvertBase {from: 0}
-						)
-					);
 				}
 
 				if ui.button("Replace").clicked() {
