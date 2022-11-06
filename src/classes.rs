@@ -5,7 +5,7 @@
 use tinyfiledialogs as tfd;
 use eframe::{egui::*};
 use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
+use strum_macros::{EnumIter, EnumDiscriminants};
 use std::{path::Path, collections::HashMap, mem::{Discriminant, self}};
 
 use super::consts::*;
@@ -20,7 +20,9 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-#[derive(EnumIter)]
+#[derive(Clone, EnumIter, EnumDiscriminants)]
+#[strum_discriminants(name(WindowDiscriminants))]
+#[strum_discriminants(derive(Hash))]
 pub enum WindowTypes {
 	ModContainer,	// holds buttons to open all the complex shit
 	ConvertBase		{from:	u32,							},
@@ -33,19 +35,20 @@ pub struct DcModBase {
 }
 
 pub struct Derecrypt {
-	pub	open_modals:	HashMap<Discriminant<WindowTypes>, DcModBase>,
+	pub	open_modals:	HashMap<WindowDiscriminants, DcModBase>,
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
 
 impl Derecrypt {
 	pub fn new() -> Self {
-		let mut modals = HashMap::new();
+		let mut modals: HashMap<WindowDiscriminants, DcModBase> = HashMap::new();
 
 		// initialize all the modules
 		for wintype in WindowTypes::iter() {
+			let disc = wintype.clone().into();
 			modals.insert(
-				mem::discriminant(&wintype),
+				disc,
 
 				DcModBase {
 					active:	false,
@@ -72,7 +75,7 @@ impl Derecrypt {
 	}
 
 	
-	pub fn toggle_module_visibility(&mut self, winid: Discriminant<WindowTypes>) {
+	pub fn toggle_module_visibility(&mut self, winid: WindowDiscriminants) {
 		self.open_modals.entry(winid)
 			.and_modify(|v| v.active = !v.active);
 	}

@@ -98,9 +98,7 @@ impl eframe::App for Derecrypt {
 
 								if ui.button("Conv Base").clicked() {
 									self.toggle_module_visibility(
-										mem::discriminant(
-											&WindowTypes::ConvertBase {from: 0}
-										)
+										WindowDiscriminants::ConvertBase
 									);
 								}
 						});*/
@@ -198,9 +196,7 @@ impl eframe::App for Derecrypt {
 			ui.horizontal(|ui| {
 				if ui.button("TOOLBOX").clicked() {
 					self.toggle_module_visibility(
-						mem::discriminant(
-							&WindowTypes::ModContainer
-						)
+						WindowDiscriminants::ModContainer
 					);
 				}
 
@@ -214,9 +210,7 @@ impl eframe::App for Derecrypt {
 
 				if ui.button("Replace").clicked() {
 					self.toggle_module_visibility(
-						mem::discriminant(
-							&WindowTypes::Replace {from: String::from(""), to: String::from(""), regex: false}
-						)
+						WindowDiscriminants::Replace
 					);
 				}
 			});
