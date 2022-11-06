@@ -8,6 +8,7 @@
 
 use std::fs;
 use eframe::{egui::{*, style::Widgets}};
+use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
 
 // OOP definitions and constants
@@ -81,14 +82,14 @@ impl eframe::App for Derecrypt {
 		});
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for pair in &mut self.open_modals.iter_mut() {
-				let dcmod: &mut DcModBase = pair.1;
+			for i_disc in WindowDiscriminants::iter() {
+				let dcmod: &mut DcModBase = &mut self.open_modals.get_mut(&i_disc).unwrap();
 				let params = &mut dcmod.params;
 
 				if !(dcmod.active) {continue};
 
 				match params {
-					WindowTypes::ModContainer	=> {/*
+					WindowTypes::ModContainer	=> {
 						Window::new("The Toolbox")
 							.show(ctx, |ui| {
 
@@ -101,7 +102,7 @@ impl eframe::App for Derecrypt {
 										WindowDiscriminants::ConvertBase
 									);
 								}
-						});*/
+						});
 					},
 
 					WindowTypes::ConvertBase	{

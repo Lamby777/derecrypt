@@ -22,7 +22,7 @@ impl ThemeColors {
 
 #[derive(Clone, EnumIter, EnumDiscriminants)]
 #[strum_discriminants(name(WindowDiscriminants))]
-#[strum_discriminants(derive(Hash))]
+#[strum_discriminants(derive(Hash, EnumIter))]
 pub enum WindowTypes {
 	ModContainer,	// holds buttons to open all the complex shit
 	ConvertBase		{from:	u32,							},
@@ -36,6 +36,7 @@ pub struct DcModBase {
 
 pub struct Derecrypt {
 	pub	open_modals:	HashMap<WindowDiscriminants, DcModBase>,
+
 	pub	outfile:		Option<String>,
 	pub	string:			String,
 }
