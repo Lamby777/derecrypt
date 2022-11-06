@@ -224,11 +224,29 @@ impl eframe::App for Derecrypt {
 			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
 				// Open a text file
 				let fname = self.get_desired_path(false, false);
+				
+				let fcontent = fs::read_to_string(&fname);
 
-				let fcontent = fs::read_to_string(&fname)
-					.expect("Failed to read file");
+				
+				self.string =
+					if fcontent.is_ok() {
+						fcontent.unwrap()
+					} else {
+						tfd::message_box_ok(
+							APP_NAME_STR,
+							"Importing as binary (could not load as string)",
+							tfd::MessageBoxIcon::Info
+						);
+						
+						let bytes: Vec<u8>	= fs::read(&fname).unwrap();
+						let mut res: String	= String::new();
+						
+						for b in bytes {
+							res = format!("{}{:08b}", res, b);
+						}
 
-				self.string = fcontent;
+						res
+					};
 			}
 
 			// If managing files
