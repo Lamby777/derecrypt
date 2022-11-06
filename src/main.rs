@@ -81,14 +81,14 @@ impl eframe::App for Derecrypt {
 		});
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for pair in &mut self.open_modals.clone().iter_mut() {
+			for pair in &mut self.open_modals.iter_mut() {
 				let dcmod: &mut DcModBase = pair.1;
 				let params = &mut dcmod.params;
 
 				if !(dcmod.active) {continue};
 
 				match params {
-					WindowTypes::ModContainer	=> {
+					WindowTypes::ModContainer	=> {/*
 						Window::new("The Toolbox")
 							.show(ctx, |ui| {
 
@@ -103,7 +103,7 @@ impl eframe::App for Derecrypt {
 										)
 									);
 								}
-						});
+						});*/
 					},
 
 					WindowTypes::ConvertBase	{

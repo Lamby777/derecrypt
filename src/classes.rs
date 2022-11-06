@@ -20,14 +20,13 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-#[derive(EnumIter, Clone)]
+#[derive(EnumIter)]
 pub enum WindowTypes {
 	ModContainer,	// holds buttons to open all the complex shit
 	ConvertBase		{from:	u32,							},
 	Replace			{from:	String,	to:	String,	regex:	bool},
 }
 
-#[derive(Clone)]
 pub struct DcModBase {
 	pub	active:		bool,
 	pub	params:		WindowTypes,
