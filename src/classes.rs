@@ -6,7 +6,7 @@ use tinyfiledialogs as tfd;
 use eframe::{egui::*};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumDiscriminants};
-use std::{path::Path, collections::HashMap, mem::{Discriminant, self}};
+use std::{path::Path, collections::HashMap};
 
 use super::consts::*;
 
