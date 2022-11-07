@@ -84,7 +84,12 @@ impl Derecrypt {
 
 	// Pops up a dialog to open a new file, and then asks
 	// if the selected path should be the new output path
-	pub fn get_desired_path(&mut self, save: bool, force_overwrite: bool) -> String {
+	pub fn get_desired_path(
+		&mut self,
+		save:				bool,
+		force_overwrite:	bool,
+	) -> Result<String, ()> {
+
 		let fname;
 
 		loop {
@@ -102,11 +107,16 @@ impl Derecrypt {
 				fname = chosen.unwrap();
 				break;
 			} else {
-				tfd::message_box_ok(
+				let res = tfd::message_box_ok_cancel(
 					APP_NAME_STR,
-					"Invalid File! Please specify a file to open.",
-					tfd::MessageBoxIcon::Error
+					"Invalid File! Try again?",
+					tfd::MessageBoxIcon::Error,
+					tfd::OkCancel::Ok,
 				);
+
+				if res == tfd::OkCancel::Cancel {
+					return Err(());
+				}
 			};
 		}
 
@@ -120,6 +130,6 @@ impl Derecrypt {
 			self.outfile = Some(fname.clone());
 		};
 
-		fname
+		Ok(fname)
 	}
 }

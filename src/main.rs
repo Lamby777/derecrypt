@@ -313,30 +313,31 @@ impl eframe::App for Derecrypt {
 			// If CTRL O
 			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
 				// Open a text file
-				let fname = self.get_desired_path(false, false);
-				
-				let fcontent = fs::read_to_string(&fname);
+				let fname_o = self.get_desired_path(false, false);
 
-				
-				self.string =
-					if fcontent.is_ok() {
-						fcontent.unwrap()
-					} else {
-						tfd::message_box_ok(
-							APP_NAME_STR,
-							"Importing as binary (could not load as string)",
-							tfd::MessageBoxIcon::Info
-						);
-						
-						let bytes: Vec<u8>	= fs::read(&fname).unwrap();
-						let mut res: String	= String::new();
-						
-						for b in bytes {
-							res = format!("{}{:08b}", res, b);
-						}
+				if let Ok(fname) = fname_o {
+					let fcontent = fs::read_to_string(&fname);
+					
+					self.string =
+						if fcontent.is_ok() {
+							fcontent.unwrap()
+						} else {
+							tfd::message_box_ok(
+								APP_NAME_STR,
+								"Importing as binary (could not load as string)",
+								tfd::MessageBoxIcon::Info
+							);
+							
+							let bytes: Vec<u8>	= fs::read(&fname).unwrap();
+							let mut res: String	= String::new();
+							
+							for b in bytes {
+								res = format!("{}{:08b}", res, b);
+							}
 
-						res
-					};
+							res
+						};
+				}
 			}
 
 			// If managing files
