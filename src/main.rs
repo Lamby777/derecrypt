@@ -129,7 +129,7 @@ impl eframe::App for Derecrypt {
 										
 										dcmod_scripts::replace(
 											&mut self.string,
-											"\"", " \""
+											"\\", " \\"
 										);
 
 										" "
@@ -144,24 +144,39 @@ impl eframe::App for Derecrypt {
 									// encoded, keep it the same.
 									for b in bytes {
 										if b.len() < 2 {
-											res = format!("{}{}", res, b);
+											res = format!("{res}{b}");
+											continue;
 										}
 
-										// stuff after the \x, \u, etc.
-										let charcode = &b[2..];
+										// example: with \u0000, these bindings would be:
+										let slice	= &b[2..];						// "0000"
+										let mode	= b.chars().nth(1).unwrap();	// 'u'
 
-										let nchar = match b.chars().nth(1).unwrap() {
-											'x' => {
-												// Hexadecimal
-												'f'
-											},
+										let charcode =
+											u32::from_str_radix(slice,
+												match mode {
+													'x' | 'u'	=> 16,
+													'0'			=> 8,
 
-											_	=> {
-												// Non-escape, so ignore it
-												res = format!("{}{}", res, b);
-												continue;
-											},
-										};
+													// non-standard, but might
+													// be useful for some people
+													'd'			=> 10,
+
+
+													_			=> {
+														res = format!("{res}{b}");
+														continue;
+													}
+												}
+											);
+										
+										if charcode.is_err() {
+											res = format!("{res}{b}");
+											continue;
+										}
+										
+										let nchar = char::from_u32(charcode.unwrap())
+														.unwrap_or('?');
 
 										res.push(nchar);
 									}
