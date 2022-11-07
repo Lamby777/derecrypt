@@ -122,23 +122,48 @@ impl eframe::App for Derecrypt {
 								);
 
 								if dcm_run(ui) {
-									let bytes: Vec<&str> = self.string.split(sep.as_str()).collect();
+									let rsep = if sep.len() > 0 { sep.as_str() } else {
+										// If no separator is specified, assume there is nothing
+										// between each escape sequence, so replace each "\"
+										// with " \" and use " " as the separator.
+										
+										dcmod_scripts::replace(
+											&mut self.string,
+											"\"", " \""
+										);
+
+										" "
+									};
+
+									// Split string by delim
+									let bytes: Vec<&str> = self.string.split(rsep).collect();
 
 									let mut res = String::new();
 
+									// For each piece, either decode it, OR if it's not
+									// encoded, keep it the same.
 									for b in bytes {
-										let np = b[2..].parse::<u32>();
-
-										if np.is_err() {
-											tfd::message_box_ok(
-												APP_NAME_STR,
-												"Invalid sequence...",
-												tfd::MessageBoxIcon::Error
-											);
-											return;
+										if b.len() < 2 {
+											res = format!("{}{}", res, b);
 										}
 
-										res = format!("{}{}", res, np.unwrap());
+										// stuff after the \x, \u, etc.
+										let charcode = &b[2..];
+
+										let nchar = match b.chars().nth(1).unwrap() {
+											'x' => {
+												// Hexadecimal
+												'f'
+											},
+
+											_	=> {
+												// Non-escape, so ignore it
+												res = format!("{}{}", res, b);
+												continue;
+											},
+										};
+
+										res.push(nchar);
 									}
 
 									self.string = res;
