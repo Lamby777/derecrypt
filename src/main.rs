@@ -102,7 +102,48 @@ impl eframe::App for Derecrypt {
 										WindowDiscriminants::ConvertBase
 									);
 								}
+
+								if ui.button("From ASCII").clicked() {
+									self.toggle_module_visibility(
+										WindowDiscriminants::FromASCII
+									);
+								}
 						});
+					},
+
+					WindowTypes::FromASCII {sep} => {
+						
+						Window::new("ASCII Sequence -> Plaintext")
+							.show(ctx, |ui| {
+
+								ui.add(
+									TextEdit::singleline(sep)
+										.hint_text("String Delimiter")
+								);
+
+								if dcm_run(ui) {
+									let bytes: Vec<&str> = self.string.split(sep.as_str()).collect();
+
+									let mut res = String::new();
+
+									for b in bytes {
+										let np = b[2..].parse::<u32>();
+
+										if np.is_err() {
+											tfd::message_box_ok(
+												APP_NAME_STR,
+												"Invalid sequence...",
+												tfd::MessageBoxIcon::Error
+											);
+											return;
+										}
+
+										res = format!("{}{}", res, np.unwrap());
+									}
+
+									self.string = res;
+								}
+							});
 					},
 
 					WindowTypes::ConvertBase	{
