@@ -315,7 +315,7 @@ impl eframe::App for Derecrypt {
 				// Open a text file
 				let fname_o = self.get_desired_path(false, false);
 
-				if let Ok(fname) = fname_o {
+				if let Some(fname) = fname_o {
 					let fcontent = fs::read_to_string(&fname);
 					
 					self.string =
@@ -340,27 +340,50 @@ impl eframe::App for Derecrypt {
 				}
 			}
 
+
+
+
 			// If managing files
-			let ctrl_n =
-				ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
-			let ctrl_s =
-				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
 			let ctrl_shift_s =
 				ui.input_mut().consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
 
-			if ctrl_n || ctrl_s || ctrl_shift_s {
-				// If "Save As" OR output path not yet specified
-				if ctrl_shift_s || ctrl_n || self.outfile.is_none() {
-					// Ask where to save to
-					self.get_desired_path(true, ctrl_n);
-				}
+			let ctrl_n =
+				ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
 
-				// Save to output file, unless using CTRL N to only edit path
-				if ctrl_s || ctrl_shift_s {
+			let is_setting_path =
+				ctrl_shift_s || ctrl_n;
+
+			let is_saving =
+				ctrl_shift_s ||
+				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
+
+				
+			let must_save_new = is_saving && self.outfile.is_none();
+
+			let mut npath = None;
+
+			if is_setting_path || must_save_new {
+				// Ask where to save to
+				npath = self.get_desired_path(true, ctrl_n);
+			}
+
+			if is_saving {
+				if must_save_new && npath.is_none() {
+					// User attempted to write to nothing
+					tfd::message_box_ok(
+						APP_NAME_STR,
+						"Your file was not saved because the output path is empty.",
+						tfd::MessageBoxIcon::Warning
+					);
+				} else {
+					// Save to output file
 					fs::write(self.outfile.as_ref().unwrap(), &self.string)
 						.expect("Failed to write file");
 				}
 			}
+
+			
+
 		});
 	}
 }

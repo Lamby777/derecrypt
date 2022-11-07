@@ -88,7 +88,7 @@ impl Derecrypt {
 		&mut self,
 		save:				bool,
 		force_overwrite:	bool,
-	) -> Result<String, ()> {
+	) -> Option<String> {
 
 		let fname;
 
@@ -109,13 +109,13 @@ impl Derecrypt {
 			} else {
 				let res = tfd::message_box_ok_cancel(
 					APP_NAME_STR,
-					"Invalid File! Try again?",
+					"No file chosen! Try again?",
 					tfd::MessageBoxIcon::Error,
 					tfd::OkCancel::Ok,
 				);
 
 				if res == tfd::OkCancel::Cancel {
-					return Err(());
+					return None;
 				}
 			};
 		}
@@ -130,6 +130,6 @@ impl Derecrypt {
 			self.outfile = Some(fname.clone());
 		};
 
-		Ok(fname)
+		Some(fname)
 	}
 }
