@@ -24,10 +24,15 @@ impl ThemeColors {
 #[strum_discriminants(name(WindowDiscriminants))]
 #[strum_discriminants(derive(Hash, EnumIter))]
 pub enum WindowTypes {
-	ModContainer,	// holds buttons to open all the complex shit
-	ConvertBase		{from:		u32,								},
-	Replace			{from:		String,	to:		String,	regex:	bool},
-	FromASCII		{sep:		String,								},
+	// holds buttons to open all the complex shit
+	ModContainer,
+
+	// holds some saved casts
+	Caster			{name:		String,	list:	Vec<Box<WindowTypes>>,	},
+
+	ConvertBase		{from:		u32,									},
+	Replace			{from:		String,	to:		String,	regex:	bool,	},
+	FromASCII		{sep:		String,									},
 }
 
 pub struct DcModBase {

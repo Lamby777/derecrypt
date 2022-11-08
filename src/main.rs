@@ -7,7 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fs;
-use eframe::{egui::{*, style::Widgets}};
+use eframe::{egui::{*, style::Widgets, plot::Text}};
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
 
@@ -89,6 +89,28 @@ impl eframe::App for Derecrypt {
 				if !(dcmod.active) {continue};
 
 				match params {
+					WindowTypes::Caster {
+						name,
+						list
+					}	=> {
+
+						Window::new("String Casting")
+							.show(ctx, |ui| {
+								// Draw current caster info
+								let cname =
+									if name.len() > 0 {
+										format!("Cast \"{}\"", name)
+									} else {
+										String::from("New Cast")
+									};
+								
+								let title = format!("{} ({} elements)", cname, list.len());
+								ui.heading(title);
+
+								//
+						});
+					},
+
 					WindowTypes::ModContainer	=> {
 						Window::new("The Toolbox")
 							.show(ctx, |ui| {
@@ -279,6 +301,12 @@ impl eframe::App for Derecrypt {
 				if ui.button("TOOLBOX").clicked() {
 					self.toggle_module_visibility(
 						WindowDiscriminants::ModContainer
+					);
+				}
+
+				if ui.button("CASTER").clicked() {
+					self.toggle_module_visibility(
+						WindowDiscriminants::Caster
 					);
 				}
 
