@@ -18,6 +18,9 @@ use consts::*;
 mod classes;
 use classes::*;
 
+mod mods;
+use mods::*;
+
 
 fn main() {
 	let options = eframe::NativeOptions {
