@@ -7,7 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fs;
-use eframe::{egui::{*, style::Widgets, plot::Text}};
+use eframe::{egui::{*, style::Widgets}};
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
 
@@ -143,7 +143,7 @@ impl eframe::App for Derecrypt {
 										.hint_text("String Delimiter")
 								);
 
-								if dcm_run(ui) {
+								if dcm_run(ui).0 {
 									let rsep = if sep.len() > 0 { sep.as_str() } else {
 										// If no separator is specified, assume there is nothing
 										// between each escape sequence, so replace each "\"
@@ -219,7 +219,7 @@ impl eframe::App for Derecrypt {
 								);
 
 								// Run module
-								if dcm_run(ui) {
+								if dcm_run(ui).0 {
 									// If "from" not in range, set to binary
 									if !(2..=36).contains(from) {
 										*from = 2;
@@ -283,7 +283,7 @@ impl eframe::App for Derecrypt {
 
 								ui.checkbox(regex, "Match via RegEx");
 						
-								if dcm_run(ui) {
+								if dcm_run(ui).0 {
 									dcmod_scripts::replace(
 										&mut self.string,
 										from.as_str(),
@@ -498,6 +498,11 @@ fn custom_window_frame(
 }
 
 // Create and check for click on a module's main run button
-fn dcm_run (ui: &mut Ui) -> bool {
-	ui.button("Run").clicked()
+fn dcm_run (ui: &mut Ui) -> (bool, bool) {
+	let b = ui.button("Run");
+	
+	(
+		b.clicked(),
+		b.secondary_clicked(),
+	)
 }
