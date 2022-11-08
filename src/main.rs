@@ -253,29 +253,23 @@ impl eframe::App for Derecrypt {
 
 
 
-					WindowTypes::Replace(args)=> {
-						let win_s::Replace {
-							from,
-							to,
-							regex
-						} = args;
-						
+					WindowTypes::Replace(args)	=> {
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {
 								ui.add(
-									TextEdit::singleline(from)
+									TextEdit::singleline(&mut args.from)
 										.hint_text("Replace This...")
 								);
 
 								ui.add(
-									TextEdit::singleline(to)
+									TextEdit::singleline(&mut args.to)
 										.hint_text("With This!")
 								);
 
-								ui.checkbox(regex, "Match via RegEx");
+								ui.checkbox(&mut args.regex, "Match via RegEx");
 						
 								if dcm_run(ui).0 {
-								//	args.run(&mut self.string);
+									args.run(&mut self.string);
 								}
 							});
 					},
