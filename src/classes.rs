@@ -20,6 +20,16 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
+mod win_s {
+    use super::WindowTypes;
+
+	#[derive(Clone, Default)]
+	pub struct Caster	{
+		pub	name:	String,
+		pub	list:	Vec<Box<WindowTypes>>,
+	}
+}
+
 #[derive(Clone, EnumIter, EnumDiscriminants)]
 #[strum_discriminants(name(WindowDiscriminants))]
 #[strum_discriminants(derive(Hash, EnumIter))]
@@ -28,7 +38,7 @@ pub enum WindowTypes {
 	ModContainer,
 
 	// holds some saved casts
-	Caster			{name:		String,	list:	Vec<Box<WindowTypes>>,	},
+	Caster			(win_s::Caster),
 
 	ConvertBase		{from:		u32,									},
 	Replace			{from:		String,	to:		String,	regex:	bool,	},
