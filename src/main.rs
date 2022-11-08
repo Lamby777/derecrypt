@@ -130,7 +130,8 @@ impl eframe::App for Derecrypt {
 						});
 					},
 
-					WindowTypes::FromASCII {sep} => {
+					WindowTypes::FromASCII(args) => {
+						let win_s::FromASCII { sep } = args;
 						
 						Window::new("ASCII Sequence -> Plaintext")
 							.show(ctx, |ui| {
@@ -205,9 +206,9 @@ impl eframe::App for Derecrypt {
 							});
 					},
 
-					WindowTypes::ConvertBase	{
-						ref	mut	from,
-					}	=> {
+					WindowTypes::ConvertBase(args) => {
+						let win_s::ConvertBase { from } = args;
+
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.add(
@@ -260,11 +261,12 @@ impl eframe::App for Derecrypt {
 
 
 
-					WindowTypes::Replace		{
-						ref	mut	from,
-						ref	mut	to,
-						ref	mut	regex
-					}	=> {
+					WindowTypes::Replace(args)=> {
+						let win_s::Replace {
+							from,
+							to,
+							regex
+						} = args;
 						
 						Window::new("Replace / Remove")
 							.show(ctx, |ui| {

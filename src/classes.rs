@@ -20,13 +20,30 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-mod win_s {
+pub mod win_s {
     use super::WindowTypes;
 
 	#[derive(Clone, Default)]
 	pub struct Caster	{
 		pub	name:	String,
 		pub	list:	Vec<Box<WindowTypes>>,
+	}
+
+	#[derive(Clone, Default)]
+	pub struct Replace	{
+		pub	from:	String,
+		pub	to:		String,
+		pub	regex:	bool,
+	}
+
+	#[derive(Clone, Default)]
+	pub struct ConvertBase	{
+		pub	from:	u32,
+	}
+
+	#[derive(Clone, Default)]
+	pub struct FromASCII	{
+		pub	sep:	String,
 	}
 }
 
@@ -40,9 +57,10 @@ pub enum WindowTypes {
 	// holds some saved casts
 	Caster			(win_s::Caster),
 
-	ConvertBase		{from:		u32,									},
-	Replace			{from:		String,	to:		String,	regex:	bool,	},
-	FromASCII		{sep:		String,									},
+	// The actual modules with config pop-out windows
+	ConvertBase		(win_s::ConvertBase),
+	Replace			(win_s::Replace),
+	FromASCII		(win_s::FromASCII),
 }
 
 pub struct DcModBase {
