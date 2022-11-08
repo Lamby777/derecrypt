@@ -38,17 +38,6 @@ fn main() {
 	);
 }
 
-// code that has its own module, but might be reused in other modules
-mod dcmod_scripts {
-	pub fn deflate(s: &mut String) {
-		s.retain(|c| !c.is_whitespace());
-	}
-
-	pub fn replace(s: &mut String, old: &str, new: &str) {
-		*s = s.as_str().replace(old, new);
-	}
-}
-
 impl eframe::App for Derecrypt {
 	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
 		Rgba::TRANSPARENT
@@ -150,7 +139,7 @@ impl eframe::App for Derecrypt {
 										// between each escape sequence, so replace each "\"
 										// with " \" and use " " as the separator.
 										
-										dcmod_scripts::replace(
+										common_ops::replace(
 											&mut self.string,
 											"\\", " \\"
 										);
@@ -227,7 +216,7 @@ impl eframe::App for Derecrypt {
 									}
 
 									// Deflate accidental whitespace
-									dcmod_scripts::deflate(&mut self.string);
+									common_ops::deflate(&mut self.string);
 
 									let res = u128::from_str_radix(
 										&self.string, *from
@@ -286,16 +275,14 @@ impl eframe::App for Derecrypt {
 								ui.checkbox(regex, "Match via RegEx");
 						
 								if dcm_run(ui).0 {
-									dcmod_scripts::replace(
-										&mut self.string,
-										from.as_str(),
-										to.as_str()
-									);
+								//	args.run(&mut self.string);
 								}
 							});
 					},
 
 
+
+					_ => {}
 				}
 			}
 
@@ -317,7 +304,8 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Deflate").clicked() {
-					dcmod_scripts::deflate(&mut self.string);
+					//win_s::Deflate::run()
+					common_ops::deflate(&mut self.string);
 				}
 
 				if ui.button("Replace").clicked() {

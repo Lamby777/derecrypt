@@ -11,8 +11,18 @@ pub trait DcMod {
 	fn run(&self, input: &mut String) -> ();
 }
 
+pub mod common_ops {
+	pub fn replace(s: &mut String, old: &str, new: &str) {
+		*s = s.as_str().replace(old, new);
+	}
+
+	pub fn deflate(s: &mut String) {
+		s.retain(|c| !c.is_whitespace());
+	}
+}
+
 pub mod win_s {
-    use super::{WindowTypes, DcMod};
+    use super::{WindowTypes, DcMod, common_ops};
 
 	#[derive(Clone, Default)]
 	pub struct Caster	{
@@ -27,6 +37,12 @@ pub mod win_s {
 		pub	regex:	bool,
 	}
 
+	impl DcMod for Replace {
+		fn run(&self, input: &mut String) -> () {
+			common_ops::replace(input, &self.from, &self.to);
+		}
+	}
+
 	#[derive(Clone, Default)]
 	pub struct ConvertBase	{
 		pub	from:	u32,
@@ -35,6 +51,13 @@ pub mod win_s {
 	#[derive(Clone, Default)]
 	pub struct FromASCII	{
 		pub	sep:	String,
+	}
+
+	pub struct Deflate;
+	impl DcMod for Deflate {
+		fn run(&self, input: &mut String) -> () {
+			common_ops::deflate(input);
+		}
 	}
 }
 
@@ -47,6 +70,11 @@ pub enum WindowTypes {
 
 	// holds some saved casts
 	Caster			(win_s::Caster),
+
+	// simple modules
+	Strip,
+	Deflate,
+	Length,
 
 	// The actual modules with config pop-out windows
 	ConvertBase		(win_s::ConvertBase),

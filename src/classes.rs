@@ -5,6 +5,7 @@
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
 use std::{path::Path, collections::HashMap};
+use std::collections::hash_map::Entry as Entry;
 
 use super::consts::*;
 use super::mods::*;
@@ -55,9 +56,14 @@ impl Derecrypt {
 		}
 	}
 
+	pub fn get_window_from_disc(&mut self, winid: WindowDiscriminants)
+		-> Entry<WindowDiscriminants, DcModBase> {
+		
+		self.open_modals.entry(winid)
+	}
 	
 	pub fn toggle_module_visibility(&mut self, winid: WindowDiscriminants) {
-		self.open_modals.entry(winid)
+		self.get_window_from_disc(winid)
 			.and_modify(|v| v.active = !v.active);
 	}
 
