@@ -7,8 +7,12 @@
 
 use strum_macros::{EnumIter, EnumDiscriminants};
 
+pub trait DcMod {
+	fn run(&self, input: &mut String) -> ();
+}
+
 pub mod win_s {
-    use super::WindowTypes;
+    use super::{WindowTypes, DcMod};
 
 	#[derive(Clone, Default)]
 	pub struct Caster	{
