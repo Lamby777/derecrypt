@@ -122,78 +122,17 @@ impl eframe::App for Derecrypt {
 						});
 					},
 
-					WindowTypes::FromASCII(args) => {
-						let win_s::FromASCII { sep } = args;
-						
+					WindowTypes::FromASCII(ref mut args) => {
 						Window::new("ASCII Sequence -> Plaintext")
 							.show(ctx, |ui| {
 
 								ui.add(
-									TextEdit::singleline(sep)
+									TextEdit::singleline(&mut args.sep)
 										.hint_text("String Delimiter")
 								);
 
 								if dcm_run(ui).0 {
-									let rsep = if sep.len() > 0 { sep.as_str() } else {
-										// If no separator is specified, assume there is nothing
-										// between each escape sequence, so replace each "\"
-										// with " \" and use " " as the separator.
-										
-										common_ops::replace(
-											&mut self.string,
-											"\\", " \\"
-										);
-
-										" "
-									};
-
-									// Split string by delim
-									let bytes: Vec<&str> = self.string.split(rsep).collect();
-
-									let mut res = String::new();
-
-									// For each piece, either decode it, OR if it's not
-									// encoded, keep it the same.
-									for b in bytes {
-										if b.len() < 2 {
-											res = format!("{res}{b}");
-											continue;
-										}
-
-										// example: with \u0000, these bindings would be:
-										let slice	= &b[2..];						// "0000"
-										let mode	= b.chars().nth(1).unwrap();	// 'u'
-
-										let charcode =
-											u32::from_str_radix(slice,
-												match mode {
-													'x' | 'u'	=> 16,
-													'0'			=> 8,
-
-													// non-standard, but might
-													// be useful for some people
-													'd'			=> 10,
-
-
-													_			=> {
-														res = format!("{res}{b}");
-														continue;
-													}
-												}
-											);
-										
-										if charcode.is_err() {
-											res = format!("{res}{b}");
-											continue;
-										}
-										
-										let nchar = char::from_u32(charcode.unwrap())
-														.unwrap_or('?');
-
-										res.push(nchar);
-									}
-
-									self.string = res;
+									args.run(&mut self.string);
 								}
 							});
 					},
