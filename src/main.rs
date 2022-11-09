@@ -137,55 +137,17 @@ impl eframe::App for Derecrypt {
 							});
 					},
 
-					WindowTypes::ConvertBase(args) => {
-						let win_s::ConvertBase { from } = args;
-
+					WindowTypes::ConvertBase(ref mut args) => {
 						Window::new("Convert Base")
 							.show(ctx, |ui| {
 								ui.add(
-									Slider::new(from, 2..=36)
+									Slider::new(&mut args.from, 2..=36)
 										.prefix("From ")
 								);
 
 								// Run module
 								if dcm_run(ui).0 {
-									// If "from" not in range, set to binary
-									if !(2..=36).contains(from) {
-										*from = 2;
-									}
-
-									// Deflate accidental whitespace
-									common_ops::deflate(&mut self.string);
-
-									let res = u128::from_str_radix(
-										&self.string, *from
-									);
-
-									match res {
-										Ok(v) => {
-											self.string = v.to_string();
-										},
-
-										Err(v) => match v.kind() {
-											core::num::IntErrorKind::PosOverflow => {
-												tfd::message_box_ok(
-													APP_NAME_STR,
-													"Attempting to calculate this caused \
-													a positive integer overflow.",
-													tfd::MessageBoxIcon::Error
-												);
-											},
-
-											_ => {
-												tfd::message_box_ok(
-													APP_NAME_STR,
-													"Number is invalid for this base!\n\
-													Did you mean to use the ASCII module?",
-													tfd::MessageBoxIcon::Error
-												);
-											}
-										}
-									}
+									args.run(&mut self.string)
 								}
 							});
 					},

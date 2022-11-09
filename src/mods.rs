@@ -8,7 +8,7 @@
 use strum_macros::{EnumIter, EnumDiscriminants};
 
 pub trait DcMod {
-	fn run(&self, input: &mut String) -> ();
+	fn run(&mut self, input: &mut String) -> ();
 }
 
 pub mod common_ops {
@@ -22,6 +22,8 @@ pub mod common_ops {
 }
 
 pub mod win_s {
+	use crate::tfd;
+    use crate::consts::*;
     use super::{WindowTypes, DcMod, common_ops};
 
 	#[derive(Clone, Default)]
@@ -39,7 +41,7 @@ pub mod win_s {
 	}
 
 	impl DcMod for Replace {
-		fn run(&self, input: &mut String) -> () {
+		fn run(&mut self, input: &mut String) -> () {
 			common_ops::replace(input, &self.from, &self.to);
 		}
 	}
@@ -50,6 +52,48 @@ pub mod win_s {
 		pub	from:	u32,
 	}
 
+	impl DcMod for ConvertBase {
+		fn run(&mut self, input: &mut String) -> () {
+			// If "from" not in range, set to binary
+			if !(2..=36).contains(&self.from) {
+				self.from = 2;
+			}
+
+			// Deflate accidental whitespace
+			common_ops::deflate(input);
+
+			let res = u128::from_str_radix(
+				input, self.from
+			);
+
+			match res {
+				Ok(v) => {
+					*input = v.to_string();
+				},
+
+				Err(v) => match v.kind() {
+					core::num::IntErrorKind::PosOverflow => {
+						tfd::message_box_ok(
+							APP_NAME_STR,
+							"Attempting to calculate this caused \
+							a positive integer overflow.",
+							tfd::MessageBoxIcon::Error
+						);
+					},
+
+					_ => {
+						tfd::message_box_ok(
+							APP_NAME_STR,
+							"Number is invalid for this base!\n\
+							Did you mean to use the ASCII module?",
+							tfd::MessageBoxIcon::Error
+						);
+					}
+				}
+			}
+		}
+	}
+
 
 	#[derive(Clone, Default)]
 	pub struct FromASCII	{
@@ -57,7 +101,7 @@ pub mod win_s {
 	}
 
 	impl DcMod for FromASCII {
-		fn run(&self, input: &mut String) -> () {
+		fn run(&mut self, input: &mut String) -> () {
 			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
 				// If no separator is specified, assume there is nothing
 				// between each escape sequence, so replace each "\"
@@ -124,7 +168,7 @@ pub mod win_s {
 
 	pub struct Deflate;
 	impl DcMod for Deflate {
-		fn run(&self, input: &mut String) -> () {
+		fn run(&mut self, input: &mut String) -> () {
 			common_ops::deflate(input);
 		}
 	}
