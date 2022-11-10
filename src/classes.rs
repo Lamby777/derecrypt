@@ -7,6 +7,7 @@ use tinyfiledialogs as tfd;
 use std::{path::Path, collections::HashMap};
 use std::collections::hash_map::Entry as Entry;
 
+use crate::Ui;
 use super::consts::*;
 use super::mods::*;
 
@@ -43,6 +44,21 @@ impl Derecrypt {
 			open_modals:	modals,
 			outfile:		None,
 			string:			String::new(),
+		}
+	}
+
+	
+	pub	fn popout_button(
+		&mut self,
+		ui:		&mut Ui,
+		name:	&str,
+		disc:	WindowDiscriminants
+	) {
+		// Show button to toggle visibility
+		if ui.button(name).clicked() {
+			self.toggle_module_visibility(
+				disc
+			);
 		}
 	}
 

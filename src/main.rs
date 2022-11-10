@@ -103,24 +103,14 @@ impl eframe::App for Derecrypt {
 					WindowTypes::ModContainer	=> {
 						Window::new("The Toolbox")
 							.show(ctx, |ui| {
+								self.popout_button(ui, "Length",
+									WindowDiscriminants::Length);
 
-								if ui.button("Length").clicked() {
-									self.toggle_module_visibility(
-										WindowDiscriminants::Length
-									);
-								}
+								self.popout_button(ui, "Conv Base",
+									WindowDiscriminants::ConvertBase);
 
-								if ui.button("Conv Base").clicked() {
-									self.toggle_module_visibility(
-										WindowDiscriminants::ConvertBase
-									);
-								}
-
-								if ui.button("From ASCII").clicked() {
-									self.toggle_module_visibility(
-										WindowDiscriminants::FromASCII
-									);
-								}
+								self.popout_button(ui, "From ASCII",
+									WindowDiscriminants::FromASCII);
 						});
 					},
 
@@ -195,35 +185,20 @@ impl eframe::App for Derecrypt {
 			}
 
 			ui.horizontal(|ui| {
-				if ui.button("TOOLBOX").clicked() {
-					self.toggle_module_visibility(
-						WindowDiscriminants::ModContainer
-					);
-				}
+				self.popout_button(ui, "TOOLBOX",
+					WindowDiscriminants::ModContainer);
 
-				if ui.button("CASTER").clicked() {
-					self.toggle_module_visibility(
-						WindowDiscriminants::Caster
-					);
-				}
+				self.popout_button(ui, "CASTER",
+					WindowDiscriminants::Caster);
 
-				if ui.button("Strip").clicked() {
-					self.toggle_module_visibility(
-						WindowDiscriminants::Strip
-					);
-				}
+				self.popout_button(ui, "Strip",
+					WindowDiscriminants::Strip);
 
-				if ui.button("Deflate").clicked() {
-					self.toggle_module_visibility(
-						WindowDiscriminants::Deflate
-					);
-				}
+				self.popout_button(ui, "Deflate",
+					WindowDiscriminants::Deflate);
 
-				if ui.button("Replace").clicked() {
-					self.toggle_module_visibility(
-						WindowDiscriminants::Replace
-					);
-				}
+				self.popout_button(ui, "Replace",
+					WindowDiscriminants::Replace);
 			});
 
 			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
@@ -399,7 +374,7 @@ fn custom_window_frame(
 }
 
 // Create and check for click on a module's main run button
-fn dcm_run (ui: &mut Ui) -> (bool, bool) {
+fn dcm_run(ui: &mut Ui) -> (bool, bool) {
 	let b = ui.button("Run");
 	
 	(
