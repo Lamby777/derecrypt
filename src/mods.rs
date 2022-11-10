@@ -166,10 +166,26 @@ pub mod win_s {
 	}
 
 
+	#[derive(Clone, Default)]
 	pub struct Deflate;
 	impl DcMod for Deflate {
 		fn run(&mut self, input: &mut String) -> () {
 			common_ops::deflate(input);
+		}
+	}
+
+	#[derive(Clone, Default)]
+	pub struct Strip;
+	impl DcMod for Strip {
+		fn run(&mut self, input: &mut String) -> () {
+			*input = input.trim().to_string();
+		}
+	}
+	#[derive(Clone, Default)]
+	pub struct Length;
+	impl DcMod for Length {
+		fn run(&mut self, input: &mut String) -> () {
+			*input = input.len().to_string();
 		}
 	}
 }
@@ -185,9 +201,9 @@ pub enum WindowTypes {
 	Caster			(win_s::Caster),
 
 	// simple modules
-	Strip,
-	Deflate,
-	Length,
+	Strip			(win_s::Strip),
+	Deflate			(win_s::Deflate),
+	Length			(win_s::Length),
 
 	// The actual modules with config pop-out windows
 	ConvertBase		(win_s::ConvertBase),

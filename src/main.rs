@@ -105,7 +105,9 @@ impl eframe::App for Derecrypt {
 							.show(ctx, |ui| {
 
 								if ui.button("Length").clicked() {
-									self.string = self.string.len().to_string();
+									self.toggle_module_visibility(
+										WindowDiscriminants::Length
+									);
 								}
 
 								if ui.button("Conv Base").clicked() {
@@ -120,6 +122,21 @@ impl eframe::App for Derecrypt {
 									);
 								}
 						});
+					},
+
+					WindowTypes::Deflate(ref mut args) => {
+						args.run(&mut self.string);
+						dcmod.active = false;
+					},
+
+					WindowTypes::Strip(ref mut args) => {
+						args.run(&mut self.string);
+						dcmod.active = false;
+					},
+
+					WindowTypes::Length(ref mut args) => {
+						args.run(&mut self.string);
+						dcmod.active = false;
 					},
 
 					WindowTypes::FromASCII(ref mut args) => {
@@ -174,10 +191,6 @@ impl eframe::App for Derecrypt {
 								}
 							});
 					},
-
-
-
-					_ => {}
 				}
 			}
 
@@ -195,12 +208,15 @@ impl eframe::App for Derecrypt {
 				}
 
 				if ui.button("Strip").clicked() {
-					self.string = self.string.trim().to_string();
+					self.toggle_module_visibility(
+						WindowDiscriminants::Strip
+					);
 				}
 
 				if ui.button("Deflate").clicked() {
-					//win_s::Deflate::run()
-					common_ops::deflate(&mut self.string);
+					self.toggle_module_visibility(
+						WindowDiscriminants::Deflate
+					);
 				}
 
 				if ui.button("Replace").clicked() {
