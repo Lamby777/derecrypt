@@ -96,7 +96,7 @@ impl eframe::App for Derecrypt {
 								let title = format!("{} ({} elements)", cname, o.list.len());
 								ui.heading(title);
 
-								if (dcm_run(ui).0) {
+								if dcm_run(ui).0 {
 									for cast in &o.list {
 										//let dcm: WindowTypes = cast.into();
 									}
