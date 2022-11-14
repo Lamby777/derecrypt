@@ -6,6 +6,7 @@
 */
 
 use strum_macros::{EnumIter, EnumDiscriminants};
+use enum_dispatch::*;
 
 pub trait DcMod {
 	fn run(&mut self, input: &mut String) -> ();
@@ -181,6 +182,7 @@ pub mod win_s {
 			*input = input.trim().to_string();
 		}
 	}
+
 	#[derive(Clone, Default)]
 	pub struct Length;
 	impl DcMod for Length {
@@ -188,14 +190,18 @@ pub mod win_s {
 			*input = input.len().to_string();
 		}
 	}
+
+	#[derive(Clone, Default)]
+	pub struct ModContainer;
 }
 
 #[derive(Clone, EnumIter, EnumDiscriminants)]
 #[strum_discriminants(name(WindowDiscriminants))]
 #[strum_discriminants(derive(Hash, EnumIter))]
+#[enum_dispatch(DcMod)]
 pub enum WindowTypes {
 	// holds buttons to open all the complex shit
-	ModContainer,
+	ModContainer	(win_s::ModContainer),
 
 	// holds some saved casts
 	Caster			(win_s::Caster),

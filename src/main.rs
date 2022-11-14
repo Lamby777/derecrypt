@@ -100,7 +100,7 @@ impl eframe::App for Derecrypt {
 						});
 					},
 
-					WindowTypes::ModContainer	=> {
+					WindowTypes::ModContainer(_)	=> {
 						Window::new("The Toolbox")
 							.show(ctx, |ui| {
 								self.popout_button(ui, "Length",
