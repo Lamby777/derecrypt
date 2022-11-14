@@ -54,11 +54,25 @@ impl Derecrypt {
 		name:	&str,
 		disc:	WindowDiscriminants
 	) {
+		let button = ui.button(name);
+
 		// Show button to toggle visibility
-		if ui.button(name).clicked() {
+		if button.clicked() {
 			self.toggle_module_visibility(
 				disc
 			);
+		}
+
+		// Add copy of module state into casting list
+		if button.secondary_clicked() {
+			let mod_state	= self.open_modals.get(&disc).unwrap().clone().params.clone();
+			let caster		= &mut self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
+
+			if let WindowTypes::Caster(ref mut args) = caster.params {
+				args.list.push(Box::new(mod_state));
+			} else {
+				panic!();
+			}
 		}
 	}
 
