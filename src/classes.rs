@@ -66,7 +66,7 @@ impl Derecrypt {
 		// Add copy of module state into casting list
 		if button.secondary_clicked() {
 			let mod_state	= self.open_modals.get(&disc).unwrap().clone().params.clone();
-			let caster		= &mut self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
+			let caster	= self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
 
 			if let WindowTypes::Caster(ref mut args) = caster.params {
 				args.list.push(Box::new(mod_state));
