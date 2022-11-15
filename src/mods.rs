@@ -65,7 +65,7 @@ pub struct Caster	{
 }
 
 impl DcMod for Caster {
-	fn run(&mut self, input: &mut String) -> () {
+	fn run(&mut self, _input: &mut String) -> () {
 		panic!("This module does not run!");
 	}
 }
@@ -230,7 +230,7 @@ impl DcMod for Length {
 #[derive(Clone, Default)]
 pub struct ModContainer;
 impl DcMod for ModContainer {
-	fn run(&mut self, input: &mut String) -> () {
+	fn run(&mut self, _input: &mut String) -> () {
 		panic!("This module does not run!");
 	}
 }
