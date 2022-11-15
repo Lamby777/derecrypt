@@ -5,6 +5,7 @@
 ** - Dex		11/8/2022
 */
 
+use std::collections::VecDeque;
 use strum_macros::{EnumIter, EnumDiscriminants};
 use enum_dispatch::*;
 use crate::tfd;
@@ -61,7 +62,7 @@ pub enum WindowTypes {
 #[derive(Clone, Default)]
 pub struct Caster	{
 	pub	name:	String,
-	pub	list:	Vec<Box<WindowTypes>>,
+	pub	list:	VecDeque<Box<WindowTypes>>,
 }
 
 impl DcMod for Caster {

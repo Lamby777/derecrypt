@@ -64,16 +64,31 @@ impl Derecrypt {
 		}
 
 		// Add copy of module state into casting list
-		if button.secondary_clicked() {
-			let mod_state	= self.open_modals.get(&disc).unwrap().clone().params.clone();
-			let caster	= self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
+		button.context_menu(|ui: &mut Ui| {
+			ui.label("Casting");
+			
+			let cast_push:		bool = ui.button("Push").clicked();
+			let cast_unshift:	bool = ui.button("Unshift").clicked();
 
-			if let WindowTypes::Caster(ref mut args) = caster.params {
-				args.list.push(Box::new(mod_state));
-			} else {
-				panic!();
+			if cast_push || cast_unshift {
+				let mod_state: WindowTypes	= self.open_modals.get(&disc).unwrap().clone().params.clone();
+				let caster: &mut DcModBase	= self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
+
+				if let WindowTypes::Caster(ref mut args) = caster.params {
+					let r#box = Box::new(mod_state);
+
+					if cast_push {
+						args.list.push_back(r#box);
+					} else if cast_unshift {
+						args.list.push_front(r#box);
+					}
+				}
+
+				ui.close_menu();
 			}
-		}
+
+		});
+
 	}
 
 	pub fn filename(&self) -> Option<String> {
