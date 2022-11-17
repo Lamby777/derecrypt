@@ -5,6 +5,7 @@
 ** - Dex		11/8/2022
 */
 
+use num::*;
 use strum_macros::{EnumIter, EnumDiscriminants};
 use enum_dispatch::*;
 
@@ -217,6 +218,10 @@ pub mod win_s {
 
 	impl DcMod for FromASCII {
 		fn run(&mut self, input: &mut String) -> () {
+			// Length of byte representations for the current mode
+			// (ex. this will be 2 in hex mode, 8 in binary mode, etc.)
+			let byte_repr_len	= 16u8.div_ceil(self.mode.into());
+
 			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
 				// If no separator is specified, assume there is nothing
 				// between each escape sequence, so replace each "\"

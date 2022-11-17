@@ -5,6 +5,7 @@
 
 // Hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![feature(int_roundings)]
 
 use std::fs;
 use eframe::{egui::{*, style::Widgets}};
@@ -152,7 +153,7 @@ impl eframe::App for Derecrypt {
 
 										for base in ASCIIBases::iter() {
 											let label = &base.to_string();
-											
+
 											ui.selectable_value(mode,
 												base, label);
 										}

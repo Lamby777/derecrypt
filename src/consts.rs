@@ -19,7 +19,7 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-#[derive(Clone, PartialEq, EnumIter)]
+#[derive(Clone, Copy, PartialEq, EnumIter)]
 pub enum ASCIIBases {
 	Binary,
 	Octal,
