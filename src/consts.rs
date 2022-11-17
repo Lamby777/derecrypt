@@ -1,6 +1,9 @@
 // Constants for the app
 
+use std::fmt::Display;
+
 use eframe::epaint::Color32;
+use strum_macros::EnumIter;
 
 pub	const TITLEBAR_HEIGHT:	f32		= 24.0;
 pub	const APP_NAME_STR:		&str	= "Derecrypt";
@@ -16,7 +19,7 @@ impl ThemeColors {
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, EnumIter)]
 pub enum ASCIIBases {
 	Binary,
 	Octal,
@@ -28,4 +31,26 @@ impl Default for ASCIIBases {
     fn default() -> Self {
 		ASCIIBases::Hexadecimal
     }
+}
+
+impl Display for ASCIIBases {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			ASCIIBases::Binary		=> write!(f, "Binary"		),
+			ASCIIBases::Octal		=> write!(f, "Octal"		),
+			ASCIIBases::Decimal		=> write!(f, "Decimal"		),
+			ASCIIBases::Hexadecimal	=> write!(f, "Hexadecimal"	),
+		}
+	}
+}
+
+impl From<ASCIIBases> for u8 {
+	fn from(value: ASCIIBases) -> Self {
+		match value {
+			ASCIIBases::Binary		=> 2,
+			ASCIIBases::Octal		=> 8,
+			ASCIIBases::Decimal		=> 10,
+			ASCIIBases::Hexadecimal	=> 16,
+		}
+	}
 }

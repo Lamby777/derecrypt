@@ -113,8 +113,11 @@ impl eframe::App for Derecrypt {
 								self.popout_button(ui, "Conv Base",
 									WindowDiscriminants::ConvertBase);
 
-								self.popout_button(ui, "From ASCII",
-									WindowDiscriminants::FromEscapedASCII);
+									self.popout_button(ui, "From ANSI Escape Codes",
+										WindowDiscriminants::FromEscapedASCII);
+
+									self.popout_button(ui, "From ASCII",
+										WindowDiscriminants::FromASCII);
 						});
 					},
 
@@ -134,12 +137,26 @@ impl eframe::App for Derecrypt {
 					},
 
 					WindowTypes::FromASCII(ref mut args) => {
-						Window::new("ASCII Sequence -> Plaintext")
+						Window::new("ASCII Values -> Plaintext")
 							.show(ctx, |ui| {
 
 								ui.add(
 									TextEdit::singleline(&mut args.sep)
 										.hint_text("String Delimiter")
+								);
+
+								ComboBox::from_label("Input Base")
+									.selected_text(&args.mode.to_string())
+									.show_ui(ui, |ui| {
+										let mode = &mut args.mode;
+
+										for base in ASCIIBases::iter() {
+											let label = &base.to_string();
+											
+											ui.selectable_value(mode,
+												base, label);
+										}
+									}
 								);
 
 								if dcm_run(ui).0 {
@@ -149,7 +166,7 @@ impl eframe::App for Derecrypt {
 					},
 
 					WindowTypes::FromEscapedASCII(ref mut args) => {
-						Window::new("ASCII Sequence -> Plaintext")
+						Window::new("ANSI Escape Codes -> Plaintext")
 							.show(ctx, |ui| {
 
 								ui.add(
