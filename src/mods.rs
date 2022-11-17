@@ -43,6 +43,7 @@ pub enum WindowTypes {
 	ConvertBase			(win_s::ConvertBase),
 	Replace				(win_s::Replace),
 	FromEscapedASCII	(win_s::FromEscapedASCII),
+	FromASCII			(win_s::FromASCII),
 }
 
 
@@ -134,6 +135,77 @@ pub mod win_s {
 	}
 
 	impl DcMod for FromEscapedASCII {
+		fn run(&mut self, input: &mut String) -> () {
+			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
+				// If no separator is specified, assume there is nothing
+				// between each escape sequence, so replace each "\"
+				// with " \" and use " " as the separator.
+				
+				common_ops::replace(
+					input,
+					"\\", " \\"
+				);
+
+				" "
+			};
+
+			// Split string by delim
+			let bytes: Vec<&str> = input.split(rsep).collect();
+
+			let mut res = String::new();
+
+			// For each piece, either decode it, OR if it's not
+			// encoded, keep it the same.
+			for b in bytes {
+				if b.len() < 2 {
+					res = format!("{res}{b}");
+					continue;
+				}
+
+				// example: with \u0000, these bindings would be:
+				let slice	= &b[2..];						// "0000"
+				let mode	= b.chars().nth(1).unwrap();	// 'u'
+
+				let charcode =
+					u32::from_str_radix(slice,
+						match mode {
+							'x' | 'u'	=> 16,
+							'0'			=> 8,
+
+							// non-standard, but might
+							// be useful for some people
+							'd'			=> 10,
+
+
+							_			=> {
+								res = format!("{res}{b}");
+								continue;
+							}
+						}
+					);
+				
+				if charcode.is_err() {
+					res = format!("{res}{b}");
+					continue;
+				}
+				
+				let nchar = char::from_u32(charcode.unwrap())
+								.unwrap_or('?');
+
+				res.push(nchar);
+			}
+
+			*input = res;
+		}
+	}
+
+
+	#[derive(Clone, Default)]
+	pub struct FromASCII	{
+		pub	sep:	String,
+	}
+
+	impl DcMod for FromASCII {
 		fn run(&mut self, input: &mut String) -> () {
 			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
 				// If no separator is specified, assume there is nothing

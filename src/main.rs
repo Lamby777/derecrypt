@@ -133,6 +133,21 @@ impl eframe::App for Derecrypt {
 						dcmod.active = false;
 					},
 
+					WindowTypes::FromASCII(ref mut args) => {
+						Window::new("ASCII Sequence -> Plaintext")
+							.show(ctx, |ui| {
+
+								ui.add(
+									TextEdit::singleline(&mut args.sep)
+										.hint_text("String Delimiter")
+								);
+
+								if dcm_run(ui).0 {
+									args.run(&mut self.string);
+								}
+							});
+					},
+
 					WindowTypes::FromEscapedASCII(ref mut args) => {
 						Window::new("ASCII Sequence -> Plaintext")
 							.show(ctx, |ui| {
