@@ -29,20 +29,20 @@ pub mod common_ops {
 #[enum_dispatch(DcMod)]
 pub enum WindowTypes {
 	// holds buttons to open all the complex shit
-	ModContainer	(win_s::ModContainer),
+	ModContainer		(win_s::ModContainer),
 
 	// holds some saved casts
-	Caster			(win_s::Caster),
+	Caster				(win_s::Caster),
 
 	// simple modules
-	Strip			(win_s::Strip),
-	Deflate			(win_s::Deflate),
-	Length			(win_s::Length),
+	Strip				(win_s::Strip),
+	Deflate				(win_s::Deflate),
+	Length				(win_s::Length),
 
 	// The actual modules with config pop-out windows
-	ConvertBase		(win_s::ConvertBase),
-	Replace			(win_s::Replace),
-	FromASCII		(win_s::FromASCII),
+	ConvertBase			(win_s::ConvertBase),
+	Replace				(win_s::Replace),
+	FromEscapedASCII	(win_s::FromEscapedASCII),
 }
 
 
@@ -129,11 +129,11 @@ pub mod win_s {
 
 
 	#[derive(Clone, Default)]
-	pub struct FromASCII	{
+	pub struct FromEscapedASCII	{
 		pub	sep:	String,
 	}
 
-	impl DcMod for FromASCII {
+	impl DcMod for FromEscapedASCII {
 		fn run(&mut self, input: &mut String) -> () {
 			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
 				// If no separator is specified, assume there is nothing

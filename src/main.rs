@@ -114,7 +114,7 @@ impl eframe::App for Derecrypt {
 									WindowDiscriminants::ConvertBase);
 
 								self.popout_button(ui, "From ASCII",
-									WindowDiscriminants::FromASCII);
+									WindowDiscriminants::FromEscapedASCII);
 						});
 					},
 
@@ -133,7 +133,7 @@ impl eframe::App for Derecrypt {
 						dcmod.active = false;
 					},
 
-					WindowTypes::FromASCII(ref mut args) => {
+					WindowTypes::FromEscapedASCII(ref mut args) => {
 						Window::new("ASCII Sequence -> Plaintext")
 							.show(ctx, |ui| {
 
