@@ -200,10 +200,19 @@ pub mod win_s {
 	}
 
 
-	#[derive(Clone, Default)]
+	#[derive(Clone)]
 	pub struct FromASCII	{
 		pub	sep:	String,
 		pub mode:	ASCIIBases
+	}
+
+	impl Default for FromASCII {
+		fn default() -> Self {
+			FromASCII {
+				sep:	String::from(" "),
+				mode:	ASCIIBases::Hexadecimal
+			}
+		}
 	}
 
 	impl DcMod for FromASCII {
