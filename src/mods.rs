@@ -203,6 +203,7 @@ pub mod win_s {
 	#[derive(Clone, Default)]
 	pub struct FromASCII	{
 		pub	sep:	String,
+		pub mode:	ASCIIBases
 	}
 
 	impl DcMod for FromASCII {

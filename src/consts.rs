@@ -15,3 +15,17 @@ impl ThemeColors {
 	pub const BG_PURPLE_DARK:	Color32	= Color32::from_rgb(18,	0,	33);
 	pub const TEXT:				Color32 = Color32::WHITE;
 }
+
+#[derive(Clone)]
+pub enum ASCIIBases {
+	Binary,
+	Octal,
+	Decimal,
+	Hexadecimal,
+}
+
+impl Default for ASCIIBases {
+    fn default() -> Self {
+		ASCIIBases::Hexadecimal
+    }
+}
