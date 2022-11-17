@@ -5,10 +5,10 @@
 ** - Dex		11/8/2022
 */
 
-use std::collections::VecDeque;
 use strum_macros::{EnumIter, EnumDiscriminants};
 use enum_dispatch::*;
 
+#[enum_dispatch]
 pub trait DcMod {
 	fn run(&mut self, input: &mut String) -> ();
 }
@@ -23,20 +23,46 @@ pub mod common_ops {
 	}
 }
 
+#[derive(Clone, EnumIter, EnumDiscriminants)]
+#[strum_discriminants(name(WindowDiscriminants))]
+#[strum_discriminants(derive(Hash, EnumIter))]
+#[enum_dispatch(DcMod)]
+pub enum WindowTypes {
+	// holds buttons to open all the complex shit
+	ModContainer	(win_s::ModContainer),
+
+	// holds some saved casts
+	Caster			(win_s::Caster),
+
+	// simple modules
+	Strip			(win_s::Strip),
+	Deflate			(win_s::Deflate),
+	Length			(win_s::Length),
+
+	// The actual modules with config pop-out windows
+	ConvertBase		(win_s::ConvertBase),
+	Replace			(win_s::Replace),
+	FromASCII		(win_s::FromASCII),
+}
+
+
+
 pub mod win_s {
+	use std::collections::VecDeque;
 	use crate::tfd;
     use crate::consts::*;
     use super::{WindowTypes, DcMod, common_ops};
 
-#[derive(Clone, Default)]
-pub struct Caster	{
-	pub	name:	String,
-	pub	list:	VecDeque<Box<WindowTypes>>,
-}
+	#[derive(Clone, Default)]
+	pub struct Caster	{
+		pub	name:	String,
+		pub	list:	VecDeque<Box<WindowTypes>>,
+	}
 
-impl DcMod for Caster {
-	fn run(&mut self, _input: &mut String) -> () {
-		panic!("This module does not run!");
+	impl DcMod for Caster {
+		fn run(&mut self, _input: &mut String) -> () {
+			panic!("This module does not run!");
+		}
 	}
 
 
@@ -197,10 +223,11 @@ impl DcMod for Caster {
 		}
 	}
 
-#[derive(Clone, Default)]
-pub struct ModContainer;
-impl DcMod for ModContainer {
-	fn run(&mut self, _input: &mut String) -> () {
-		panic!("This module does not run!");
+	#[derive(Clone, Default)]
+	pub struct ModContainer;
+	impl DcMod for ModContainer {
+		fn run(&mut self, _input: &mut String) -> () {
+			panic!("This module does not run!");
+		}
 	}
 }
