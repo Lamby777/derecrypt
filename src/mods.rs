@@ -217,60 +217,46 @@ pub mod win_s {
 
 	impl DcMod for FromASCII {
 		fn run(&mut self, input: &mut String) -> () {
+			// Number of digits in the current specified base (ex. Hexadecimal = 16)
+			let base_numct: u8	= self.mode.into();
+
 			// Length of byte representations for the current mode
 			// (ex. this will be 2 in hex mode, 8 in binary mode, etc.)
-			let byte_repr_len	= 16u8.div_ceil(self.mode.into());
+			// 0123456789abcdef
+			// f = 15 = 1111
+			// ff = 255 = 1111_1111
+			// 16 / 2	= 8
+			// 16 / 16	= 1
+			//
+			// 
+			//
 
-			let rsep = if self.sep.len() > 0 { self.sep.as_str() } else {
-				// If no separator is specified, assume there is nothing
-				// between each escape sequence, so replace each "\"
-				// with " \" and use " " as the separator.
-				
-				common_ops::replace(
-					input,
-					"\\", " \\"
-				);
-
-				" "
-			};
+			let byte_repr_len	= (16u8 / base_numct) as usize;
+			let total_chunks	= input.len().div_ceil(byte_repr_len);
 
 			// Split string by delim
-			let bytes: Vec<&str> = input.split(rsep).collect();
+			let mut bytes: Vec<&str> = vec![];
+			for i in 0..total_chunks {
+				let offset = i * (byte_repr_len);
+
+				let res = &input[offset .. (offset + (byte_repr_len))];
+				bytes.push(res);
+			}
 
 			let mut res = String::new();
 
 			// For each piece, either decode it, OR if it's not
 			// encoded, keep it the same.
-			for b in bytes {
-				if b.len() < 2 {
-					res = format!("{res}{b}");
-					continue;
-				}
-
-				// example: with \u0000, these bindings would be:
-				let slice	= &b[2..];						// "0000"
-				let mode	= b.chars().nth(1).unwrap();	// 'u'
-
+			for slice in bytes {				
 				let charcode =
 					u32::from_str_radix(slice,
-						match mode {
-							'x' | 'u'	=> 16,
-							'0'			=> 8,
-
-							// non-standard, but might
-							// be useful for some people
-							'd'			=> 10,
-
-
-							_			=> {
-								res = format!("{res}{b}");
-								continue;
-							}
-						}
+						Into::<u8>::into(self.mode) as u32
 					);
+
+				//dbg!(&charcode);
 				
 				if charcode.is_err() {
-					res = format!("{res}{b}");
+					res = format!("{res}{slice}");
 					continue;
 				}
 				
