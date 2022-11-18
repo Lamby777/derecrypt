@@ -10,6 +10,7 @@
 #![feature(int_log)]
 
 use std::fs;
+use std::sync::{Mutex, Arc};
 use eframe::{egui::{*, style::Widgets}};
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
@@ -100,7 +101,7 @@ impl eframe::App for Derecrypt {
 								ui.heading(title);
 
 								if dcm_run(ui).0 {
-									args.run(&mut self.string);
+									args.run(&mut self.string.lock().unwrap());
 								}
 						});
 					},
@@ -123,17 +124,17 @@ impl eframe::App for Derecrypt {
 					},
 
 					WindowTypes::Deflate(ref mut args) => {
-						args.run(&mut self.string);
+						args.run(&mut self.string.lock().unwrap());
 						dcmod.active = false;
 					},
 
 					WindowTypes::Strip(ref mut args) => {
-						args.run(&mut self.string);
+						args.run(&mut self.string.lock().unwrap());
 						dcmod.active = false;
 					},
 
 					WindowTypes::Length(ref mut args) => {
-						args.run(&mut self.string);
+						args.run(&mut self.string.lock().unwrap());
 						dcmod.active = false;
 					},
 
@@ -161,8 +162,10 @@ impl eframe::App for Derecrypt {
 								);
 
 								if dcm_run(ui).0 {
-									args.run(&mut self.string);
+									let st = &mut *self.string.lock().unwrap();
+									args.run(st);
 								}
+								
 								/*
 								ui.heading("Output contains weird \\x stuff?");
 								ui.label("You're probably looking for this instead:");
@@ -183,7 +186,7 @@ impl eframe::App for Derecrypt {
 								);
 
 								if dcm_run(ui).0 {
-									args.run(&mut self.string);
+									args.run(&mut self.string.lock().unwrap());
 								}
 							});
 					},
@@ -198,7 +201,7 @@ impl eframe::App for Derecrypt {
 
 								// Run module
 								if dcm_run(ui).0 {
-									args.run(&mut self.string)
+									args.run(&mut self.string.lock().unwrap())
 								}
 							});
 					},
@@ -221,7 +224,7 @@ impl eframe::App for Derecrypt {
 								ui.checkbox(&mut args.regex, "Match via RegEx");
 						
 								if dcm_run(ui).0 {
-									args.run(&mut self.string);
+									args.run(&mut self.string.lock().unwrap());
 								}
 							});
 					},
@@ -248,7 +251,9 @@ impl eframe::App for Derecrypt {
 			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
 			|ui| {
 				ScrollArea::vertical().always_show_scroll(true).show(ui, |ui| {
-					let writebox = TextEdit::multiline(&mut self.string)
+					let st = &mut *self.string.lock().unwrap();
+
+					let writebox = TextEdit::multiline(st)
 						.font(TextStyle::Monospace)
 						.code_editor()
 						.lock_focus(true)
@@ -266,7 +271,7 @@ impl eframe::App for Derecrypt {
 				if let Some(fname) = fname_o {
 					let fcontent = fs::read_to_string(&fname);
 					
-					self.string =
+					self.string = Arc::new(Mutex::new(
 						if fcontent.is_ok() {
 							fcontent.unwrap()
 						} else {
@@ -284,7 +289,8 @@ impl eframe::App for Derecrypt {
 							}
 
 							res
-						};
+						}
+					));
 				}
 			}
 
@@ -325,7 +331,7 @@ impl eframe::App for Derecrypt {
 					);
 				} else {
 					// Save to output file
-					fs::write(self.outfile.as_ref().unwrap(), &self.string)
+					fs::write(self.outfile.as_ref().unwrap(), &*self.string.lock().unwrap())
 						.expect("Failed to write file");
 				}
 			}

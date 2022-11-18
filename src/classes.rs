@@ -4,6 +4,7 @@
 
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
+use std::sync::{Mutex, Arc};
 use std::{path::Path, collections::HashMap};
 use std::collections::hash_map::Entry as Entry;
 
@@ -20,7 +21,7 @@ pub struct Derecrypt {
 	pub	open_modals:	HashMap<WindowDiscriminants, DcModBase>,
 
 	pub	outfile:		Option<String>,
-	pub	string:			String,
+	pub	string:			Arc<Mutex<String>>,
 }
 
 impl Derecrypt {
@@ -43,7 +44,7 @@ impl Derecrypt {
 		Derecrypt {
 			open_modals:	modals,
 			outfile:		None,
-			string:			String::new(),
+			string:			Arc::new(Mutex::new(String::new())),
 		}
 	}
 
