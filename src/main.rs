@@ -84,26 +84,24 @@ impl eframe::App for Derecrypt {
 				if !(dcmod.active) {continue};
 
 				match params {
-					WindowTypes::Caster(o) => {
+					WindowTypes::Caster(ref mut args) => {
 
 						Window::new("String Casting")
 							.show(ctx, |ui| {
 								// Draw current caster info
 								let cname =
-									if o.name.len() > 0 {
-										format!("Cast \"{}\"", o.name)
+									if args.name.len() > 0 {
+										format!("Cast \"{}\"", args.name)
 									} else {
 										String::from("New Cast")
 									};
 								
-								let title = format!("{} ({} elements)", cname, o.list.len());
+								let title = format!("{} ({} elements)", cname, args.list.len());
 								ui.heading(title);
 
-								/*if dcm_run(ui).0 {
-									for cast in &o.list {
-										//let dcm: WindowTypes = cast.into();
-									}
-								}*/
+								if dcm_run(ui).0 {
+									args.run(&mut self.string);
+								}
 						});
 					},
 

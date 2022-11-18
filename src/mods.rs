@@ -61,8 +61,10 @@ pub mod win_s {
 	}
 
 	impl DcMod for Caster {
-		fn run(&mut self, _input: &mut String) -> () {
-			panic!("This module does not run!");
+		fn run(&mut self, input: &mut String) -> () {
+			for cast in self.list.iter_mut() {
+				cast.run(input);
+			}
 		}
 	}
 
