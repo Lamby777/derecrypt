@@ -114,12 +114,12 @@ impl eframe::App for Derecrypt {
 								self.popout_button(ui, "Conv Base",
 									WindowDiscriminants::ConvertBase);
 
-									self.popout_button(ui, "From ANSI Escape Codes",
-										WindowDiscriminants::FromEscapedASCII);
+								self.popout_button(ui, "From ANSI Escape Codes",
+									WindowDiscriminants::FromEscapedASCII);
 
-									self.popout_button(ui, "From ASCII",
-										WindowDiscriminants::FromASCII);
-						});
+								self.popout_button(ui, "From ASCII",
+									WindowDiscriminants::FromASCII);
+							});
 					},
 
 					WindowTypes::Deflate(ref mut args) => {
@@ -163,6 +163,13 @@ impl eframe::App for Derecrypt {
 								if dcm_run(ui).0 {
 									args.run(&mut self.string);
 								}
+								/*
+								ui.heading("Output contains weird \\x stuff?");
+								ui.label("You're probably looking for this instead:");
+								
+								self.popout_button(ui, "OPEN",
+									WindowDiscriminants::FromEscapedASCII);
+								*/
 							});
 					},
 
