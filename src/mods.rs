@@ -222,16 +222,7 @@ pub mod win_s {
 
 			// Length of byte representations for the current mode
 			// (ex. this will be 2 in hex mode, 8 in binary mode, etc.)
-			// 0123456789abcdef
-			// f = 15 = 1111
-			// ff = 255 = 1111_1111
-			// 16 / 2	= 8
-			// 16 / 16	= 1
-			//
-			// 
-			//
-
-			let byte_repr_len	= (16u8 / base_numct) as usize;
+			let byte_repr_len	= 256u16.ilog(base_numct as u16) as usize;
 			let total_chunks	= input.len().div_ceil(byte_repr_len);
 
 			// Split string by delim

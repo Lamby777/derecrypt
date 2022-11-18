@@ -7,6 +7,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![feature(int_roundings)]
 #![feature(slice_as_chunks)]
+#![feature(int_log)]
 
 use std::fs;
 use eframe::{egui::{*, style::Widgets}};
