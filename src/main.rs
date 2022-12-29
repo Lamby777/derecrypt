@@ -9,7 +9,9 @@
 #![feature(slice_as_chunks)]
 #![feature(int_log)]
 
+use std::cell::RefCell;
 use std::fs;
+use std::ops::DerefMut;
 use std::sync::{Mutex, Arc};
 use eframe::{egui::{*, style::Widgets}};
 use strum::IntoEnumIterator;
@@ -79,7 +81,7 @@ impl eframe::App for Derecrypt {
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for i_disc in WindowDiscriminants::iter() {
-				let dcmod: &mut DcModBase = &mut self.open_modals.get_mut(&i_disc).unwrap();
+				let dcmod: &mut DcModBase = self.open_modals.get_mut(&i_disc).unwrap();
 				let params = &mut dcmod.params;
 
 				if !(dcmod.active) {continue};
@@ -139,40 +141,39 @@ impl eframe::App for Derecrypt {
 					},
 
 					WindowTypes::FromASCII(ref mut args) => {
+						let args_c = RefCell::from(args);
+
 						Window::new("ASCII Values -> Plaintext")
 							.show(ctx, |ui| {
 
 								ui.add(
-									TextEdit::singleline(&mut args.sep)
+									TextEdit::singleline(&mut args_c.borrow_mut().sep)
 										.hint_text("String Delimiter")
 								);
 
 								ComboBox::from_label("Input Base")
-									.selected_text(&args.mode.to_string())
+									.selected_text(args_c.borrow_mut().mode.to_string())
 									.show_ui(ui, |ui| {
-										let mode = &mut args.mode;
-
 										for base in ASCIIBases::iter() {
 											let label = &base.to_string();
 
-											ui.selectable_value(mode,
+											ui.selectable_value(&mut args_c.borrow_mut().mode,
 												base, label);
 										}
 									}
 								);
 
 								if dcm_run(ui).0 {
-									let st = &mut *self.string.lock().unwrap();
-									args.run(st);
+									let mut lock = self.string.lock().unwrap();
+									let st = lock.deref_mut();
+									args_c.borrow_mut().run(st);
 								}
 								
-								/*
 								ui.heading("Output contains weird \\x stuff?");
 								ui.label("You're probably looking for this instead:");
 								
 								self.popout_button(ui, "OPEN",
 									WindowDiscriminants::FromEscapedASCII);
-								*/
 							});
 					},
 
