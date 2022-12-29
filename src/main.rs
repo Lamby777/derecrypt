@@ -9,7 +9,6 @@
 #![feature(slice_as_chunks)]
 #![feature(int_log)]
 
-use std::cell::RefCell;
 use std::fs;
 use std::ops::DerefMut;
 use std::sync::{Mutex, Arc};
@@ -141,23 +140,21 @@ impl eframe::App for Derecrypt {
 					},
 
 					WindowTypes::FromASCII(ref mut args) => {
-						let args_c = RefCell::from(args);
-
 						Window::new("ASCII Values -> Plaintext")
 							.show(ctx, |ui| {
 
 								ui.add(
-									TextEdit::singleline(&mut args_c.borrow_mut().sep)
+									TextEdit::singleline(&mut args.sep)
 										.hint_text("String Delimiter")
 								);
 
 								ComboBox::from_label("Input Base")
-									.selected_text(args_c.borrow_mut().mode.to_string())
+									.selected_text(args.mode.to_string())
 									.show_ui(ui, |ui| {
 										for base in ASCIIBases::iter() {
 											let label = &base.to_string();
 
-											ui.selectable_value(&mut args_c.borrow_mut().mode,
+											ui.selectable_value(&mut args.mode,
 												base, label);
 										}
 									}
@@ -166,7 +163,7 @@ impl eframe::App for Derecrypt {
 								if dcm_run(ui).0 {
 									let mut lock = self.string.lock().unwrap();
 									let st = lock.deref_mut();
-									args_c.borrow_mut().run(st);
+									args.run(st);
 								}
 								
 								ui.heading("Output contains weird \\x stuff?");
