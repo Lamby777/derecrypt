@@ -53,6 +53,7 @@ pub mod win_s {
 	use crate::tfd;
     use crate::consts::*;
     use super::{WindowTypes, DcMod, common_ops};
+	use fancy_regex::Regex;
 
 	#[derive(Clone, Default)]
 	pub struct Caster	{
@@ -78,7 +79,14 @@ pub mod win_s {
 
 	impl DcMod for Replace {
 		fn run(&mut self, input: &mut String) -> () {
-			common_ops::replace(input, &self.from, &self.to);
+			if !self.regex {
+				// Replace strings
+				common_ops::replace(input, &self.from, &self.to);
+			} else {
+				// Replace strings via RegEx
+				let regex = Regex::new(self.from.as_str()).unwrap();
+				*input = regex.replace_all(input, self.to.as_str()).to_string();
+			}
 		}
 	}
 
