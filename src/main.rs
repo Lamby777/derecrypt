@@ -80,152 +80,154 @@ impl eframe::App for Derecrypt {
 
 		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
 			for i_disc in WindowDiscriminants::iter() {
-				let dcmod: &mut DcModBase = self.open_modals.get_mut(&i_disc).unwrap();
-				let params = &mut dcmod.params;
+				//let dcmod: &mut DcModBase = self.open_modals.get_mut(&i_disc).unwrap();
 
-				if !(dcmod.active) {continue};
+				if let Some(dcmod) = self.open_modals.get_mut(&i_disc) {
+					if !(dcmod.active) {continue};
+					
+					let params = &mut dcmod.params_state;
 
-				match params {
-					WindowTypes::Caster(ref mut args) => {
+					match params {
+						WindowTypes::Caster(ref mut args) => {
 
-						Window::new("String Casting")
-							.show(ctx, |ui| {
-								// Draw current caster info
-								let cname =
-									if args.name.len() > 0 {
-										format!("Cast \"{}\"", args.name)
-									} else {
-										String::from("New Cast")
-									};
-								
-								let title = format!("{} ({} elements)", cname, args.list.len());
-								ui.heading(title);
+							Window::new("String Casting")
+								.show(ctx, |ui| {
+									// Draw current caster info
+									let cname =
+										if args.name.len() > 0 {
+											format!("Cast \"{}\"", args.name)
+										} else {
+											String::from("New Cast")
+										};
+									
+									let title = format!("{} ({} elements)", cname, args.list.len());
+									ui.heading(title);
 
-								if dcm_run(ui).0 {
-									args.run(&mut self.string.lock().unwrap());
-								}
-						});
-					},
-
-					WindowTypes::ModContainer(_)	=> {
-						Window::new("The Toolbox")
-							.show(ctx, |ui| {
-								self.popout_button(ui, "Length",
-									WindowDiscriminants::Length);
-
-								self.popout_button(ui, "Conv Base",
-									WindowDiscriminants::ConvertBase);
-
-								self.popout_button(ui, "From ANSI Escape Codes",
-									WindowDiscriminants::FromEscapedASCII);
-
-								self.popout_button(ui, "From ASCII",
-									WindowDiscriminants::FromASCII);
-							});
-					},
-
-					WindowTypes::Deflate(ref mut args) => {
-						args.run(&mut self.string.lock().unwrap());
-						dcmod.active = false;
-					},
-
-					WindowTypes::Strip(ref mut args) => {
-						args.run(&mut self.string.lock().unwrap());
-						dcmod.active = false;
-					},
-
-					WindowTypes::Length(ref mut args) => {
-						args.run(&mut self.string.lock().unwrap());
-						dcmod.active = false;
-					},
-
-					WindowTypes::FromASCII(ref mut args) => {
-						Window::new("ASCII Values -> Plaintext")
-							.show(ctx, |ui| {
-
-								ui.add(
-									TextEdit::singleline(&mut args.sep)
-										.hint_text("String Delimiter")
-								);
-
-								ComboBox::from_label("Input Base")
-									.selected_text(args.mode.to_string())
-									.show_ui(ui, |ui| {
-										for base in ASCIIBases::iter() {
-											let label = &base.to_string();
-
-											ui.selectable_value(&mut args.mode,
-												base, label);
-										}
+									if dcm_run(ui).0 {
+										args.run(&mut self.string.lock().unwrap());
 									}
-								);
-
-								if dcm_run(ui).0 {
-									let mut lock = self.string.lock().unwrap();
-									let st = lock.deref_mut();
-									args.run(st);
-								}
-								
-								ui.heading("Output contains weird \\x stuff?");
-								ui.label("You're probably looking for this instead:");
-								
-								self.popout_button(ui, "OPEN",
-									WindowDiscriminants::FromEscapedASCII);
 							});
-					},
+						},
 
-					WindowTypes::FromEscapedASCII(ref mut args) => {
-						Window::new("ANSI Escape Codes -> Plaintext")
-							.show(ctx, |ui| {
+						WindowTypes::ModContainer(_)	=> {
+							Window::new("The Toolbox")
+								.show(ctx, |ui| {
+									self.popout_button(ui, "Length",
+										WindowDiscriminants::Length);
 
-								ui.add(
-									TextEdit::singleline(&mut args.sep)
-										.hint_text("String Delimiter")
-								);
+									self.popout_button(ui, "Conv Base",
+										WindowDiscriminants::ConvertBase);
 
-								if dcm_run(ui).0 {
-									args.run(&mut self.string.lock().unwrap());
-								}
-							});
-					},
+									self.popout_button(ui, "From ANSI Escape Codes",
+										WindowDiscriminants::FromEscapedASCII);
 
-					WindowTypes::ConvertBase(ref mut args) => {
-						Window::new("Convert Base")
-							.show(ctx, |ui| {
-								ui.add(
-									Slider::new(&mut args.from, 2..=36)
-										.prefix("From ")
-								);
+									self.popout_button(ui, "From ASCII",
+										WindowDiscriminants::FromASCII);
+								});
+						},
 
-								// Run module
-								if dcm_run(ui).0 {
-									args.run(&mut self.string.lock().unwrap())
-								}
-							});
-					},
+						WindowTypes::Deflate(ref mut args) => {
+							args.run(&mut self.string.lock().unwrap());
+							dcmod.active = false;
+						},
+
+						WindowTypes::Strip(ref mut args) => {
+							args.run(&mut self.string.lock().unwrap());
+							dcmod.active = false;
+						},
+
+						WindowTypes::Length(ref mut args) => {
+							args.run(&mut self.string.lock().unwrap());
+							dcmod.active = false;
+						},
+
+						WindowTypes::FromASCII(ref mut args) => {
+							Window::new("ASCII Values -> Plaintext")
+								.show(ctx, |ui| {
+
+									ui.add(
+										TextEdit::singleline(&mut args.sep)
+											.hint_text("String Delimiter")
+									);
+
+									ComboBox::from_label("Input Base")
+										.selected_text(args.mode.to_string())
+										.show_ui(ui, |ui| {
+											for base in ASCIIBases::iter() {
+												let label = &base.to_string();
+
+												ui.selectable_value(&mut args.mode,
+													base, label);
+											}
+										}
+									);
+
+									if dcm_run(ui).0 {
+										let mut lock = self.string.lock().unwrap();
+										let st = lock.deref_mut();
+										args.run(st);
+									}
+									
+									ui.heading("Output contains weird \\x stuff?");
+									ui.label("You're probably looking for the \"From ASNI Escape Codes\" module.");
+								});
+						},
+
+						WindowTypes::FromEscapedASCII(ref mut args) => {
+							Window::new("ANSI Escape Codes -> Plaintext")
+								.show(ctx, |ui| {
+
+									ui.add(
+										TextEdit::singleline(&mut args.sep)
+											.hint_text("String Delimiter")
+									);
+
+									if dcm_run(ui).0 {
+										args.run(&mut self.string.lock().unwrap());
+									}
+								});
+						},
+
+						WindowTypes::ConvertBase(ref mut args) => {
+							Window::new("Convert Base")
+								.show(ctx, |ui| {
+									ui.add(
+										Slider::new(&mut args.from, 2..=36)
+											.prefix("From ")
+									);
+
+									// Run module
+									if dcm_run(ui).0 {
+										args.run(&mut self.string.lock().unwrap())
+									}
+								});
+						},
 
 
 
-					WindowTypes::Replace(args)	=> {
-						Window::new("Replace / Remove")
-							.show(ctx, |ui| {
-								ui.add(
-									TextEdit::singleline(&mut args.from)
-										.hint_text("Replace This...")
-								);
+						WindowTypes::Replace(args)	=> {
+							Window::new("Replace / Remove")
+								.show(ctx, |ui| {
+									ui.add(
+										TextEdit::singleline(&mut args.from)
+											.hint_text("Replace This...")
+									);
 
-								ui.add(
-									TextEdit::singleline(&mut args.to)
-										.hint_text("With This!")
-								);
+									ui.add(
+										TextEdit::singleline(&mut args.to)
+											.hint_text("With This!")
+									);
 
-								ui.checkbox(&mut args.regex, "Match via RegEx");
-						
-								if dcm_run(ui).0 {
-									args.run(&mut self.string.lock().unwrap());
-								}
-							});
-					},
+									ui.checkbox(&mut args.regex, "Match via RegEx");
+							
+									if dcm_run(ui).0 {
+										args.run(&mut self.string.lock().unwrap());
+									}
+								});
+						},
+					}
+
+
 				}
 			}
 

@@ -14,7 +14,7 @@ use super::mods::*;
 
 pub struct DcModBase {
 	pub	active:		bool,
-	pub	params:		WindowTypes,
+	pub	params_state:		WindowTypes,
 }
 
 pub struct Derecrypt {
@@ -36,7 +36,7 @@ impl Derecrypt {
 
 				DcModBase {
 					active:	false,
-					params:	wintype,
+					params_state:	wintype,
 				}
 			);
 		}
@@ -72,10 +72,10 @@ impl Derecrypt {
 			let cast_unshift:	bool = ui.button("Unshift").clicked();
 
 			if cast_push || cast_unshift {
-				let mod_state: WindowTypes	= self.open_modals.get(&disc).unwrap().clone().params.clone();
+				let mod_state: WindowTypes	= self.open_modals.get(&disc).unwrap().clone().params_state.clone();
 				let caster: &mut DcModBase	= self.open_modals.get_mut(&WindowDiscriminants::Caster).unwrap();
 
-				if let WindowTypes::Caster(ref mut args) = caster.params {
+				if let WindowTypes::Caster(ref mut args) = caster.params_state {
 					let r#box = Box::new(mod_state);
 
 					if cast_push {
