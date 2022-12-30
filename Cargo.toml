@@ -1,6 +1,6 @@
 [package]
 name = "stringsuite"
-version = "1.6.0"
+version = "1.6.1"
 edition = "2021"
 
 [dependencies]
@@ -10,3 +10,4 @@ strum = "0.24.1"
 strum_macros = "0.24.3"
 enum_dispatch = "0.3.8"
 num-traits = "0.2.15"
+fancy-regex = "0.10.0"
