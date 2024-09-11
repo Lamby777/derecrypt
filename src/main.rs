@@ -64,28 +64,32 @@ fn build_window(app: &Application) {
         .clone();
 
     // Present window
-    build_main_ui(&window);
+    let textview = build_main_ui(&window);
     window.present();
 
-    // let key_controller = EventControllerKey::new();
-    // key_controller.connect_key_pressed(move |_, keyval, _keycode, state| {
-    //     // Check if Ctrl + O is pressed
-    //     if state.contains(gdk::ModifierType::CONTROL_MASK)
-    //         && keyval == gdk::Key::O
-    //     {
-    //         println!("Ctrl + O pressed!");
-    //
-    //         return Propagation::Stop;
-    //     }
-    //
-    //     Propagation::Proceed
-    // });
-    // window.add_controller(key_controller);
+    let key_controller = EventControllerKey::new();
+    let window2 = window.clone();
+    let textview2 = textview.clone();
+    key_controller.connect_key_pressed(move |_, keyval, _keycode, state| {
+        let ctrl_down = state.contains(gdk::ModifierType::CONTROL_MASK);
+        let shift_down = state.contains(gdk::ModifierType::SHIFT_MASK);
+
+        if ctrl_down && keyval.to_lower() == gdk::Key::o {
+            open_file_dialog(&window2, &textview2);
+
+            return Propagation::Stop;
+        }
+
+        Propagation::Proceed
+    });
+
+    // Add the key event controller to the window
+    window.add_controller(key_controller);
 
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
-fn build_main_ui(window: &ApplicationWindow) {
+fn build_main_ui(window: &ApplicationWindow) -> TextView {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(gtk::Orientation::Vertical)
@@ -98,10 +102,11 @@ fn build_main_ui(window: &ApplicationWindow) {
     main_box.append(&textbox);
 
     window.set_child(Some(&main_box));
+    textview
 }
 
 fn build_text_box() -> (gtk::ScrolledWindow, gtk::TextView) {
-    const SCROLL_MARGIN: i32 = 25;
+    const SCROLL_MARGIN: i32 = 15;
     let scroll = gtk::ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
         .margin_top(SCROLL_MARGIN)
@@ -113,11 +118,27 @@ fn build_text_box() -> (gtk::ScrolledWindow, gtk::TextView) {
     let textview = gtk::TextView::builder()
         .hexpand(true)
         .vexpand(true)
+        .monospace(true)
         .overflow(Overflow::Hidden)
+        .name("buffer")
         .build();
 
     scroll.set_child(Some(&textview));
     (scroll, textview)
+}
+
+fn open_file_dialog(window: &ApplicationWindow, textbox: &TextView) {
+    let dialog = gtk::FileDialog::builder().build();
+    let textbox2 = textbox.clone();
+    dialog.open(Some(window), None::<&Cancellable>, move |file| {
+        let Ok(file) = file else {
+            println!("No file selected.");
+            return;
+        };
+        let path = file.path().unwrap();
+        let content = std::fs::read_to_string(&path).unwrap();
+        textbox2.buffer().set_text(&content);
+    });
 }
 
 fn build_top_row(window: &ApplicationWindow, textbox: &TextView) -> gtk::Box {
@@ -131,21 +152,7 @@ fn build_top_row(window: &ApplicationWindow, textbox: &TextView) -> gtk::Box {
 
     let window2 = window.clone();
     let textbox2 = textbox.clone();
-    open_button.connect_clicked(move |_| {
-        let dialog = gtk::FileDialog::builder().build();
-
-        let textbox2 = textbox2.clone();
-        dialog.open(Some(&window2), None::<&Cancellable>, move |file| {
-            let Ok(file) = file else {
-                println!("No file selected.");
-                return;
-            };
-
-            let path = file.path().unwrap();
-            let content = std::fs::read_to_string(&path).unwrap();
-            textbox2.buffer().set_text(&content);
-        });
-    });
+    open_button.connect_clicked(move |_| open_file_dialog(&window2, &textbox2));
 
     top_row.append(&cast_button);
     top_row.append(&open_button);
