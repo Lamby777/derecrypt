@@ -4,9 +4,6 @@
 ** - RC 		9/11/2024
 */
 
-#![feature(int_roundings)]
-#![feature(slice_as_chunks)]
-
 use std::sync::{Arc, Mutex};
 
 use adw::gtk::{ApplicationWindow, CssProvider};
