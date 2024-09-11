@@ -7,12 +7,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![feature(int_roundings)]
 #![feature(slice_as_chunks)]
-#![feature(int_log)]
 
+use eframe::egui::style::Widgets;
+use eframe::egui::*;
 use std::fs;
 use std::ops::DerefMut;
-use std::sync::{Mutex, Arc};
-use eframe::{egui::{*, style::Widgets}};
+use std::sync::{Arc, Mutex};
 use strum::IntoEnumIterator;
 use tinyfiledialogs as tfd;
 
@@ -23,126 +23,139 @@ use consts::*;
 mod classes;
 use classes::*;
 
-mod mods;
-use mods::*;
-
+mod modules;
+use modules::*;
 
 fn main() {
-	let options = eframe::NativeOptions {
-		always_on_top:	true,
-		decorated:		false,
-		transparent:	true,
-		vsync:			true,
-		..Default::default()
-	};
+    let options = eframe::NativeOptions {
+        always_on_top: true,
+        decorated: false,
+        transparent: true,
+        vsync: true,
+        ..Default::default()
+    };
 
-	eframe::run_native(
-		format!("{} Editor", APP_NAME_STR).as_str(),
-		options,
-		Box::new(|_cc| Box::new(Derecrypt::new())),
-	);
+    eframe::run_native(
+        format!("{} Editor", APP_NAME_STR).as_str(),
+        options,
+        Box::new(|_cc| Box::new(Derecrypt::new())),
+    );
 }
 
 impl eframe::App for Derecrypt {
-	fn clear_color(&self, _visuals: &Visuals) -> Rgba {
-		Rgba::TRANSPARENT
-	}
+    fn clear_color(&self, _visuals: &Visuals) -> Rgba {
+        Rgba::TRANSPARENT
+    }
 
-	fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
-		let titlebar_text = if let Some(v) = self.filename() {
-			format!("{}: {}", APP_NAME_STR, v)
-		} else {
-			format!("{} v{}", APP_NAME_STR, DC_VERSION)
-		};
-		
-		ctx.set_visuals(Visuals {
-			resize_corner_size:		4.0,
-			hyperlink_color:		ThemeColors::BG_PURPLE_LIGHT,
-			faint_bg_color:			ThemeColors::BG_PURPLE_LIGHT,
-			extreme_bg_color:		ThemeColors::BG_PURPLE_DARK,
+    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        let titlebar_text = if let Some(v) = self.filename() {
+            format!("{}: {}", APP_NAME_STR, v)
+        } else {
+            format!("{} v{}", APP_NAME_STR, DC_VERSION)
+        };
 
-			widgets: Widgets {
-				noninteractive: {
-					style::WidgetVisuals {
-						bg_fill:	ThemeColors::BG_PURPLE_DEEP,
-						bg_stroke:	Stroke::new(2.0, ThemeColors::BG_PURPLE),
-						fg_stroke:	Stroke::new(1.0, ThemeColors::TEXT),
-						rounding:	Rounding::same(4.0),
-						expansion:	0.0,
-					}
-				},
+        ctx.set_visuals(Visuals {
+            resize_corner_size: 4.0,
+            hyperlink_color: ThemeColors::BG_PURPLE_LIGHT,
+            faint_bg_color: ThemeColors::BG_PURPLE_LIGHT,
+            extreme_bg_color: ThemeColors::BG_PURPLE_DARK,
 
-				..Widgets::dark()
-			},
-		
-			..Visuals::dark()
-		});
+            widgets: Widgets {
+                noninteractive: {
+                    style::WidgetVisuals {
+                        bg_fill: ThemeColors::BG_PURPLE_DEEP,
+                        bg_stroke: Stroke::new(2.0, ThemeColors::BG_PURPLE),
+                        fg_stroke: Stroke::new(1.0, ThemeColors::TEXT),
+                        rounding: Rounding::same(4.0),
+                        expansion: 0.0,
+                    }
+                },
 
-		custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
-			for i_disc in WindowDiscriminants::iter() {
-				//let dcmod: &mut DcModBase = self.open_modals.get_mut(&i_disc).unwrap();
+                ..Widgets::dark()
+            },
 
-				if let Some(dcmod) = self.open_modals.get_mut(&i_disc) {
-					if !(dcmod.active) {continue};
-					
-					let params = &mut dcmod.params_state;
+            ..Visuals::dark()
+        });
 
-					match params {
-						WindowTypes::Caster(ref mut args) => {
+        custom_window_frame(ctx, frame, titlebar_text.as_str(), |ui| {
+            for i_disc in WindowDiscriminants::iter() {
+                //let dcmod: &mut DcModBase = self.open_modals.get_mut(&i_disc).unwrap();
 
-							Window::new("String Casting")
-								.show(ctx, |ui| {
-									// Draw current caster info
-									let cname =
-										if args.name.len() > 0 {
-											format!("Cast \"{}\"", args.name)
-										} else {
-											String::from("New Cast")
-										};
-									
-									let title = format!("{} ({} elements)", cname, args.list.len());
-									ui.heading(title);
+                if let Some(dcmod) = self.open_modals.get_mut(&i_disc) {
+                    if !(dcmod.active) {
+                        continue;
+                    };
 
-									if dcm_run(ui).0 {
-										args.run(&mut self.string.lock().unwrap());
-									}
-							});
-						},
+                    let params = &mut dcmod.params_state;
 
-						WindowTypes::ModContainer(_)	=> {
-							Window::new("The Toolbox")
-								.show(ctx, |ui| {
-									self.popout_button(ui, "Length",
-										WindowDiscriminants::Length);
+                    match params {
+                        WindowTypes::Caster(ref mut args) => {
+                            Window::new("String Casting").show(ctx, |ui| {
+                                // Draw current caster info
+                                let cname = if !args.name.is_empty() {
+                                    format!("Cast \"{}\"", args.name)
+                                } else {
+                                    String::from("New Cast")
+                                };
 
-									self.popout_button(ui, "Conv Base",
-										WindowDiscriminants::ConvertBase);
+                                let title = format!(
+                                    "{} ({} elements)",
+                                    cname,
+                                    args.list.len()
+                                );
+                                ui.heading(title);
 
-									self.popout_button(ui, "From ANSI Escape Codes",
-										WindowDiscriminants::FromEscapedASCII);
+                                if dcm_run(ui).0 {
+                                    args.run(&mut self.string.lock().unwrap());
+                                }
+                            });
+                        }
 
-									self.popout_button(ui, "From ASCII",
-										WindowDiscriminants::FromASCII);
-								});
-						},
+                        WindowTypes::ModContainer(_) => {
+                            Window::new("The Toolbox").show(ctx, |ui| {
+                                self.popout_button(
+                                    ui,
+                                    "Length",
+                                    WindowDiscriminants::Length,
+                                );
 
-						WindowTypes::Deflate(ref mut args) => {
-							args.run(&mut self.string.lock().unwrap());
-							dcmod.active = false;
-						},
+                                self.popout_button(
+                                    ui,
+                                    "Conv Base",
+                                    WindowDiscriminants::ConvertBase,
+                                );
 
-						WindowTypes::Strip(ref mut args) => {
-							args.run(&mut self.string.lock().unwrap());
-							dcmod.active = false;
-						},
+                                self.popout_button(
+                                    ui,
+                                    "From ANSI Escape Codes",
+                                    WindowDiscriminants::FromEscapedASCII,
+                                );
 
-						WindowTypes::Length(ref mut args) => {
-							args.run(&mut self.string.lock().unwrap());
-							dcmod.active = false;
-						},
+                                self.popout_button(
+                                    ui,
+                                    "From ASCII",
+                                    WindowDiscriminants::FromASCII,
+                                );
+                            });
+                        }
 
-						WindowTypes::FromASCII(ref mut args) => {
-							Window::new("ASCII Values -> Plaintext")
+                        WindowTypes::Deflate(ref mut args) => {
+                            args.run(&mut self.string.lock().unwrap());
+                            dcmod.active = false;
+                        }
+
+                        WindowTypes::Strip(ref mut args) => {
+                            args.run(&mut self.string.lock().unwrap());
+                            dcmod.active = false;
+                        }
+
+                        WindowTypes::Length(ref mut args) => {
+                            args.run(&mut self.string.lock().unwrap());
+                            dcmod.active = false;
+                        }
+
+                        WindowTypes::FromASCII(ref mut args) => {
+                            Window::new("ASCII Values -> Plaintext")
 								.show(ctx, |ui| {
 
 									ui.add(
@@ -171,264 +184,251 @@ impl eframe::App for Derecrypt {
 									ui.heading("Output contains weird \\x stuff?");
 									ui.label("You're probably looking for the \"From ASNI Escape Codes\" module.");
 								});
-						},
+                        }
 
-						WindowTypes::FromEscapedASCII(ref mut args) => {
-							Window::new("ANSI Escape Codes -> Plaintext")
-								.show(ctx, |ui| {
+                        WindowTypes::FromEscapedASCII(ref mut args) => {
+                            Window::new("ANSI Escape Codes -> Plaintext").show(
+                                ctx,
+                                |ui| {
+                                    ui.add(
+                                        TextEdit::singleline(&mut args.sep)
+                                            .hint_text("String Delimiter"),
+                                    );
 
-									ui.add(
-										TextEdit::singleline(&mut args.sep)
-											.hint_text("String Delimiter")
-									);
+                                    if dcm_run(ui).0 {
+                                        args.run(
+                                            &mut self.string.lock().unwrap(),
+                                        );
+                                    }
+                                },
+                            );
+                        }
 
-									if dcm_run(ui).0 {
-										args.run(&mut self.string.lock().unwrap());
-									}
-								});
-						},
+                        WindowTypes::ConvertBase(ref mut args) => {
+                            Window::new("Convert Base").show(ctx, |ui| {
+                                ui.add(
+                                    Slider::new(&mut args.from, 2..=36)
+                                        .prefix("From "),
+                                );
 
-						WindowTypes::ConvertBase(ref mut args) => {
-							Window::new("Convert Base")
-								.show(ctx, |ui| {
-									ui.add(
-										Slider::new(&mut args.from, 2..=36)
-											.prefix("From ")
-									);
+                                // Run module
+                                if dcm_run(ui).0 {
+                                    args.run(&mut self.string.lock().unwrap())
+                                }
+                            });
+                        }
 
-									// Run module
-									if dcm_run(ui).0 {
-										args.run(&mut self.string.lock().unwrap())
-									}
-								});
-						},
+                        WindowTypes::Replace(args) => {
+                            Window::new("Replace / Remove").show(ctx, |ui| {
+                                ui.add(
+                                    TextEdit::singleline(&mut args.from)
+                                        .hint_text("Replace This..."),
+                                );
 
+                                ui.add(
+                                    TextEdit::singleline(&mut args.to)
+                                        .hint_text("With This!"),
+                                );
 
+                                ui.checkbox(&mut args.regex, "Match via RegEx");
 
-						WindowTypes::Replace(args)	=> {
-							Window::new("Replace / Remove")
-								.show(ctx, |ui| {
-									ui.add(
-										TextEdit::singleline(&mut args.from)
-											.hint_text("Replace This...")
-									);
+                                if dcm_run(ui).0 {
+                                    args.run(&mut self.string.lock().unwrap());
+                                }
+                            });
+                        }
+                    }
+                }
+            }
 
-									ui.add(
-										TextEdit::singleline(&mut args.to)
-											.hint_text("With This!")
-									);
+            ui.horizontal(|ui| {
+                self.popout_button(
+                    ui,
+                    "TOOLBOX",
+                    WindowDiscriminants::ModContainer,
+                );
 
-									ui.checkbox(&mut args.regex, "Match via RegEx");
-							
-									if dcm_run(ui).0 {
-										args.run(&mut self.string.lock().unwrap());
-									}
-								});
-						},
-					}
+                self.popout_button(ui, "CASTER", WindowDiscriminants::Caster);
 
+                self.popout_button(ui, "Strip", WindowDiscriminants::Strip);
 
-				}
-			}
+                self.popout_button(ui, "Deflate", WindowDiscriminants::Deflate);
 
-			ui.horizontal(|ui| {
-				self.popout_button(ui, "TOOLBOX",
-					WindowDiscriminants::ModContainer);
+                self.popout_button(ui, "Replace", WindowDiscriminants::Replace);
+            });
 
-				self.popout_button(ui, "CASTER",
-					WindowDiscriminants::Caster);
+            ui.with_layout(
+                Layout::centered_and_justified(Direction::TopDown),
+                |ui| {
+                    ScrollArea::vertical().always_show_scroll(true).show(
+                        ui,
+                        |ui| {
+                            let st = &mut *self.string.lock().unwrap();
 
-				self.popout_button(ui, "Strip",
-					WindowDiscriminants::Strip);
+                            let writebox = TextEdit::multiline(st)
+                                .font(TextStyle::Monospace)
+                                .code_editor()
+                                .lock_focus(true)
+                                .desired_width(f32::INFINITY);
 
-				self.popout_button(ui, "Deflate",
-					WindowDiscriminants::Deflate);
+                            ui.add(writebox);
+                        },
+                    );
+                },
+            );
 
-				self.popout_button(ui, "Replace",
-					WindowDiscriminants::Replace);
-			});
+            // If CTRL O
+            if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
+                // Open a text file
+                let fname_o = self.get_desired_path(false, false);
 
-			ui.with_layout(Layout::centered_and_justified(Direction::TopDown),
-			|ui| {
-				ScrollArea::vertical().always_show_scroll(true).show(ui, |ui| {
-					let st = &mut *self.string.lock().unwrap();
+                if let Some(fname) = fname_o {
+                    let fcontent = fs::read_to_string(&fname);
 
-					let writebox = TextEdit::multiline(st)
-						.font(TextStyle::Monospace)
-						.code_editor()
-						.lock_focus(true)
-						.desired_width(f32::INFINITY);
-					
-					ui.add(writebox);
-				});
-			});
+                    self.string = Arc::new(Mutex::new(fcontent.unwrap_or_else(
+                        |_| {
+                        tfd::message_box_ok(
+                            APP_NAME_STR,
+                            "Importing as binary (could not load as string)",
+                            tfd::MessageBoxIcon::Info,
+                        );
 
-			// If CTRL O
-			if ui.input_mut().consume_key(Modifiers::COMMAND, Key::O) {
-				// Open a text file
-				let fname_o = self.get_desired_path(false, false);
+                        let bytes: Vec<u8> = fs::read(&fname).unwrap();
+                        let mut res: String = String::new();
 
-				if let Some(fname) = fname_o {
-					let fcontent = fs::read_to_string(&fname);
-					
-					self.string = Arc::new(Mutex::new(
-						if fcontent.is_ok() {
-							fcontent.unwrap()
-						} else {
-							tfd::message_box_ok(
-								APP_NAME_STR,
-								"Importing as binary (could not load as string)",
-								tfd::MessageBoxIcon::Info
-							);
-							
-							let bytes: Vec<u8>	= fs::read(&fname).unwrap();
-							let mut res: String	= String::new();
-							
-							for b in bytes {
-								res = format!("{}{:08b}", res, b);
-							}
+                        for b in bytes {
+                            res = format!("{}{:08b}", res, b);
+                        }
 
-							res
-						}
-					));
-				}
-			}
+                        res
+                    })));
+                }
+            }
 
+            // If managing files
+            let ctrl_shift_s = ui
+                .input_mut()
+                .consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
 
+            let ctrl_n = ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
 
+            let is_setting_path = ctrl_shift_s || ctrl_n;
 
-			// If managing files
-			let ctrl_shift_s =
-				ui.input_mut().consume_key(Modifiers::COMMAND | Modifiers::SHIFT, Key::S);
+            let is_saving = ctrl_shift_s
+                || ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
 
-			let ctrl_n =
-				ui.input_mut().consume_key(Modifiers::COMMAND, Key::N);
+            let must_save_new = is_saving && self.outfile.is_none();
 
-			let is_setting_path =
-				ctrl_shift_s || ctrl_n;
+            let mut npath = None;
 
-			let is_saving =
-				ctrl_shift_s ||
-				ui.input_mut().consume_key(Modifiers::COMMAND, Key::S);
+            if is_setting_path || must_save_new {
+                // Ask where to save to
+                npath = self.get_desired_path(true, ctrl_n);
+            }
 
-				
-			let must_save_new = is_saving && self.outfile.is_none();
-
-			let mut npath = None;
-
-			if is_setting_path || must_save_new {
-				// Ask where to save to
-				npath = self.get_desired_path(true, ctrl_n);
-			}
-
-			if is_saving {
-				if must_save_new && npath.is_none() {
-					// User attempted to write to nothing
-					tfd::message_box_ok(
+            if is_saving {
+                if must_save_new && npath.is_none() {
+                    // User attempted to write to nothing
+                    tfd::message_box_ok(
 						APP_NAME_STR,
 						"Your file was not saved because the output path is empty.",
 						tfd::MessageBoxIcon::Warning
 					);
-				} else {
-					// Save to output file
-					fs::write(self.outfile.as_ref().unwrap(), &*self.string.lock().unwrap())
-						.expect("Failed to write file");
-				}
-			}
-
-			
-
-		});
-	}
+                } else {
+                    // Save to output file
+                    fs::write(
+                        self.outfile.as_ref().unwrap(),
+                        &*self.string.lock().unwrap(),
+                    )
+                    .expect("Failed to write file");
+                }
+            }
+        });
+    }
 }
 
 fn custom_window_frame(
-	ctx: &Context,
-	frame: &mut eframe::Frame,
-	title: &str,
-	add_contents: impl FnOnce(&mut Ui),
+    ctx: &Context,
+    frame: &mut eframe::Frame,
+    title: &str,
+    add_contents: impl FnOnce(&mut Ui),
 ) {
-	let vis				= &ctx.style().visuals;
-	let text_color		= vis.text_color();
-	let window_stroke	= vis.window_stroke();
-	let window_fill		= vis.window_fill();
+    let vis = &ctx.style().visuals;
+    let text_color = vis.text_color();
+    let window_stroke = vis.window_stroke();
+    let window_fill = vis.window_fill();
 
-	CentralPanel::default()
-		.frame(Frame::none())
-		.show(ctx, |ui| {
-			let rect = ui.max_rect();
-			let painter = ui.painter();
+    CentralPanel::default()
+        .frame(Frame::none())
+        .show(ctx, |ui| {
+            let rect = ui.max_rect();
+            let painter = ui.painter();
 
-			// Paint the frame:
-			painter.rect(
-				rect.shrink(1.0),
-				10.0,
-				window_fill,
-				window_stroke,
-			);
+            // Paint the frame:
+            painter.rect(rect.shrink(1.0), 10.0, window_fill, window_stroke);
 
-			// Paint the title:
-			painter.text(
-				rect.center_top() + vec2(0.0, TITLEBAR_HEIGHT / 2.0),
-				Align2::CENTER_CENTER,
-				title,
-				FontId::proportional(TITLEBAR_HEIGHT * 0.8),
-				text_color,
-			);
+            // Paint the title:
+            painter.text(
+                rect.center_top() + vec2(0.0, TITLEBAR_HEIGHT / 2.0),
+                Align2::CENTER_CENTER,
+                title,
+                FontId::proportional(TITLEBAR_HEIGHT * 0.8),
+                text_color,
+            );
 
-			// Paint the line under the title:
-			painter.line_segment(
-				[
-					rect.left_top() + vec2(2.0, TITLEBAR_HEIGHT),
-					rect.right_top() + vec2(-2.0, TITLEBAR_HEIGHT),
-				],
-				window_stroke,
-			);
+            // Paint the line under the title:
+            painter.line_segment(
+                [
+                    rect.left_top() + vec2(2.0, TITLEBAR_HEIGHT),
+                    rect.right_top() + vec2(-2.0, TITLEBAR_HEIGHT),
+                ],
+                window_stroke,
+            );
 
-			// Add the close button:
-			let close_button = ui.put(
-				Rect::from_min_size(
-					rect.right_top() - vec2(32.0, 0.0),
-					Vec2::splat(TITLEBAR_HEIGHT)
-				),
-				Button::new(RichText::new("❌")
-					.size(TITLEBAR_HEIGHT - 4.0)).frame(false),
-			);
+            // Add the close button:
+            let close_button = ui.put(
+                Rect::from_min_size(
+                    rect.right_top() - vec2(32.0, 0.0),
+                    Vec2::splat(TITLEBAR_HEIGHT),
+                ),
+                Button::new(RichText::new("❌").size(TITLEBAR_HEIGHT - 4.0))
+                    .frame(false),
+            );
 
-			if close_button.clicked() {
-				frame.close();
-			}
+            if close_button.clicked() {
+                frame.close();
+            }
 
-			// Draggable title bar
-			let title_bar_rect = {
-				let mut rect = rect;
-				rect.max.y = rect.min.y + TITLEBAR_HEIGHT;
-				rect
-			};
-			let title_bar_response =
-				ui.interact(title_bar_rect, Id::new("title_bar"), Sense::click());
-			if title_bar_response.is_pointer_button_down_on() {
-				frame.drag_window();
-			}
+            // Draggable title bar
+            let title_bar_rect = {
+                let mut rect = rect;
+                rect.max.y = rect.min.y + TITLEBAR_HEIGHT;
+                rect
+            };
+            let title_bar_response = ui.interact(
+                title_bar_rect,
+                Id::new("title_bar"),
+                Sense::click(),
+            );
+            if title_bar_response.is_pointer_button_down_on() {
+                frame.drag_window();
+            }
 
-			// Add the contents:
-			let content_rect = {
-				let mut rect = rect;
-				rect.min.y = title_bar_rect.max.y;
-				rect
-			}
-			.shrink(4.0);
-			let mut content_ui = ui.child_ui(content_rect, *ui.layout());
-			add_contents(&mut content_ui);
-		});
+            // Add the contents:
+            let content_rect = {
+                let mut rect = rect;
+                rect.min.y = title_bar_rect.max.y;
+                rect
+            }
+            .shrink(4.0);
+            let mut content_ui = ui.child_ui(content_rect, *ui.layout());
+            add_contents(&mut content_ui);
+        });
 }
 
 // Create and check for click on a module's main run button
 fn dcm_run(ui: &mut Ui) -> (bool, bool) {
-	let b = ui.button("Run");
-	
-	(
-		b.clicked(),
-		b.secondary_clicked(),
-	)
+    let b = ui.button("Run");
+
+    (b.clicked(), b.secondary_clicked())
 }
