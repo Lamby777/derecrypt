@@ -70,6 +70,12 @@ fn build_window(app: &Application) {
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
-fn build_main_ui(_window: &ApplicationWindow) {
-    // TODO
+fn build_main_ui(window: &ApplicationWindow) {
+    let main_box = gtk::Box::builder().hexpand(true).build();
+
+    let text_view =
+        gtk::TextView::builder().hexpand(true).vexpand(true).build();
+    main_box.append(&text_view);
+
+    window.set_child(Some(&main_box));
 }
