@@ -9,7 +9,7 @@ use consts::{APP_ID, DC_VERSION};
 use gtk::glib::Propagation;
 mod modules;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::RwLock;
 
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
@@ -17,30 +17,20 @@ use adw::{glib, Application};
 use gtk::gio::Cancellable;
 use gtk::{gdk, EventControllerKey, Label, Overflow, TextView};
 
-static DC: RwLock<Option<Derecrypt>> = RwLock::new(None);
+static DC: RwLock<Derecrypt> = RwLock::new(Derecrypt::new());
 
 /// Program state
 pub struct Derecrypt {
     pub outfile: Option<String>,
-    pub string: Arc<Mutex<String>>,
 }
 
-impl Default for Derecrypt {
-    fn default() -> Self {
-        Self {
-            outfile: None,
-            string: Arc::new(Mutex::new(String::new())),
-        }
+impl Derecrypt {
+    const fn new() -> Self {
+        Self { outfile: None }
     }
 }
 
 fn main() -> glib::ExitCode {
-    // initialize the app state
-    {
-        let mut dc = DC.write().unwrap();
-        *dc = Some(Derecrypt::default());
-    }
-
     // start the gtk app
     let app = Application::builder().application_id(APP_ID).build();
     app.connect_activate(build_window);
@@ -159,9 +149,8 @@ fn open_file_dialog(
             let path_str = path.to_str().unwrap().to_string();
 
             let mut dc = DC.write().unwrap();
-            dc.as_mut().unwrap().outfile = Some(path_str);
-            outfile_label2
-                .set_label(&outfile_fmt(&dc.as_ref().unwrap().outfile));
+            dc.outfile = Some(path_str);
+            outfile_label2.set_label(&outfile_fmt(&dc.outfile));
         }
     });
 }
@@ -171,7 +160,6 @@ fn build_top_row(
     textbox: &TextView,
 ) -> (gtk::Box, Label) {
     let dc = DC.read().unwrap();
-    let dc = dc.as_ref().unwrap();
 
     let top_row = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
