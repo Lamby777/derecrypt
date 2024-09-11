@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=derecrypt
+GenericName=Text Editor
+
+Comment=Strings Processor
+
+Exec=derecrypt
+Icon=derecrypt
+Terminal=false
+Categories=Utility;TextEditor;Development;

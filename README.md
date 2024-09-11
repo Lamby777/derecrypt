@@ -1,4 +1,4 @@
-![Main Logo](/ref/logo-derecrypt.png)
+![Main Logo](/meta/logo-derecrypt.png)
 
 # What is this for?
 
