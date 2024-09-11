@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 use strum_macros::EnumIter;
 
-pub const APP_NAME_STR: &str = "org.sparklet.derecrypt";
+pub const APP_ID: &str = "org.sparklet.derecrypt";
 pub const DC_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Clone, Copy, Default, PartialEq, EnumIter)]
