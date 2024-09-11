@@ -1,7 +1,3 @@
-/*
-**OOP stuff to be used in main.rs
-*/
-
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::path::Path;
@@ -11,7 +7,6 @@ use tinyfiledialogs as tfd;
 
 use super::consts::*;
 use super::modules::*;
-use crate::Ui;
 
 pub struct DcModBase {
     pub active: bool,
@@ -44,49 +39,6 @@ impl Derecrypt {
             outfile: None,
             string: Arc::new(Mutex::new(String::new())),
         }
-    }
-
-    pub fn popout_button(
-        &mut self,
-        ui: &mut Ui,
-        name: &str,
-        disc: WindowDiscriminants,
-    ) {
-        let button = ui.button(name);
-
-        // Show button to toggle visibility
-        if button.clicked() {
-            self.toggle_module_visibility(disc);
-        }
-
-        // Add copy of module state into casting list
-        button.context_menu(|ui: &mut Ui| {
-            ui.label("Casting");
-
-            let cast_push: bool = ui.button("Push").clicked();
-            let cast_unshift: bool = ui.button("Unshift").clicked();
-
-            if cast_push || cast_unshift {
-                let mod_state: WindowTypes =
-                    self.open_modals.get(&disc).unwrap().params_state.clone();
-                let caster: &mut DcModBase = self
-                    .open_modals
-                    .get_mut(&WindowDiscriminants::Caster)
-                    .unwrap();
-
-                if let WindowTypes::Caster(ref mut args) = caster.params_state {
-                    let r#box = Box::new(mod_state);
-
-                    if cast_push {
-                        args.list.push_back(r#box);
-                    } else if cast_unshift {
-                        args.list.push_front(r#box);
-                    }
-                }
-
-                ui.close_menu();
-            }
-        });
     }
 
     pub fn filename(&self) -> Option<String> {
