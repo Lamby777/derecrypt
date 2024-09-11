@@ -1,53 +1,22 @@
 /*
-**	There is a reasonably high chance that
-**	I might know what I'm doing.
+** I still have no idea what I'm doing.
 **
-** - Dex		11/8/2022
+** - RC 		11/8/2022
 */
 
-use enum_dispatch::*;
-use strum_macros::{EnumDiscriminants, EnumIter};
-
-#[enum_dispatch]
 pub trait DcMod {
-    fn run(&mut self, input: &mut String);
+    fn run(&mut self, input: &str) -> String;
 }
 
+/// Operations used in multiple modules
 pub mod common_ops {
-    pub fn replace(s: &mut String, old: &str, new: &str) {
-        *s = s.as_str().replace(old, new);
-    }
-
     pub fn deflate(s: &mut String) {
         s.retain(|c| !c.is_whitespace());
     }
 }
 
-#[derive(Clone, EnumIter, EnumDiscriminants)]
-#[strum_discriminants(name(WindowDiscriminants))]
-#[strum_discriminants(derive(Hash, EnumIter))]
-#[enum_dispatch(DcMod)]
-pub enum WindowTypes {
-    // holds buttons to open all the complex shit
-    ModContainer(win_s::ModContainer),
-
-    // holds some saved casts
-    Caster(win_s::Caster),
-
-    // simple modules
-    Strip(win_s::Strip),
-    Deflate(win_s::Deflate),
-    Length(win_s::Length),
-
-    // The actual modules with config pop-out windows
-    ConvertBase(win_s::ConvertBase),
-    Replace(win_s::Replace),
-    FromEscapedASCII(win_s::FromEscapedASCII),
-    FromASCII(win_s::FromASCII),
-}
-
 pub mod win_s {
-    use super::{common_ops, DcMod, WindowTypes};
+    use super::{common_ops, DcMod};
     use crate::consts::*;
     use crate::tfd;
     use fancy_regex::Regex;
@@ -56,14 +25,17 @@ pub mod win_s {
     #[derive(Clone, Default)]
     pub struct Caster {
         pub name: String,
-        pub list: VecDeque<Box<WindowTypes>>,
+        pub list: VecDeque<Box<dyn DcMod>>,
     }
 
     impl DcMod for Caster {
-        fn run(&mut self, input: &mut String) {
+        fn run(&mut self, input: &str) -> String {
+            let mut output = input.to_owned();
             for cast in self.list.iter_mut() {
-                cast.run(input);
+                output = cast.run(&output);
             }
+
+            output
         }
     }
 
@@ -75,7 +47,7 @@ pub mod win_s {
     }
 
     impl DcMod for Replace {
-        fn run(&mut self, input: &mut String) {
+        fn run(&mut self, input: &str) -> String {
             if !self.regex {
                 // Replace strings
                 common_ops::replace(input, &self.from, &self.to);
