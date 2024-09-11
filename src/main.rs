@@ -4,16 +4,17 @@
 ** - RC 		9/11/2024
 */
 
+mod consts;
+use consts::{APP_ID, DC_VERSION};
+mod modules;
+
 use std::sync::{Arc, Mutex};
 
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
-
-mod consts;
-use consts::{APP_ID, DC_VERSION};
-use gtk::gio;
-mod modules;
+use gtk::gio::Cancellable;
+use gtk::TextView;
 
 /// Program state
 pub struct Derecrypt {
@@ -74,10 +75,10 @@ fn build_main_ui(window: &ApplicationWindow) {
         .orientation(gtk::Orientation::Vertical)
         .build();
 
-    let top_row = top_row(window);
-
     let text_view =
         gtk::TextView::builder().hexpand(true).vexpand(true).build();
+
+    let top_row = top_row(window, &text_view);
 
     main_box.append(&top_row);
     main_box.append(&text_view);
@@ -85,7 +86,7 @@ fn build_main_ui(window: &ApplicationWindow) {
     window.set_child(Some(&main_box));
 }
 
-fn top_row(window: &ApplicationWindow) -> gtk::Box {
+fn top_row(window: &ApplicationWindow, textbox: &TextView) -> gtk::Box {
     let top_row = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .build();
@@ -95,12 +96,20 @@ fn top_row(window: &ApplicationWindow) -> gtk::Box {
     let save_button = gtk::Button::builder().label("Save").build();
 
     let window2 = window.clone();
+    let textbox2 = textbox.clone();
     open_button.connect_clicked(move |_| {
         let dialog = gtk::FileDialog::builder().build();
-        let cancellable = gio::Cancellable::new();
 
-        dialog.open(Some(&window2), Some(&cancellable), |file| {
-            let _ = dbg!(file);
+        let textbox2 = textbox2.clone();
+        dialog.open(Some(&window2), None::<&Cancellable>, move |file| {
+            let Ok(file) = file else {
+                println!("No file selected.");
+                return;
+            };
+
+            let path = file.path().unwrap();
+            let content = std::fs::read_to_string(&path).unwrap();
+            textbox2.buffer().set_text(&content);
         });
     });
 
