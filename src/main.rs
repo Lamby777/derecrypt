@@ -1,18 +1,33 @@
 /*
-** I only somewhat know what I'm doing.
-** - Dex		10/25/2022
+** I still have no idea what I'm doing.
+**
+** - RC 		9/11/2024
 */
 
-// Hide console window on Windows in release
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![feature(int_roundings)]
 #![feature(slice_as_chunks)]
 
-use tinyfiledialogs as tfd;
-
-// OOP definitions and constants
-mod classes;
 mod consts;
 mod modules;
 
 fn main() {}
+
+use std::sync::{Arc, Mutex};
+
+/// Program state
+pub struct Derecrypt {
+    pub open_modals: Vec<()>, // TODO
+
+    pub outfile: Option<String>,
+    pub string: Arc<Mutex<String>>,
+}
+
+impl Derecrypt {
+    pub fn new() -> Self {
+        Derecrypt {
+            open_modals: vec![],
+            outfile: None,
+            string: Arc::new(Mutex::new(String::new())),
+        }
+    }
+}

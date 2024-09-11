@@ -1,14 +1,11 @@
-// Constants for the app
+//! Constants for the app
 
 use std::fmt::Display;
 
 use strum_macros::EnumIter;
 
-pub const TITLEBAR_HEIGHT: f32 = 24.0;
-pub const APP_NAME_STR: &str = "Derecrypt";
+pub const APP_NAME_STR: &str = "org.sparklet.derecrypt";
 pub const DC_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-pub struct ThemeColors;
 
 #[derive(Clone, Copy, Default, PartialEq, EnumIter)]
 pub enum ASCIIBases {
