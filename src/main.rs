@@ -6,6 +6,7 @@
 
 mod consts;
 use consts::{APP_ID, DC_VERSION};
+use gtk::glib::Propagation;
 mod modules;
 
 use std::sync::{Arc, Mutex};
@@ -14,7 +15,7 @@ use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
 use gtk::gio::Cancellable;
-use gtk::TextView;
+use gtk::{gdk, EventControllerKey, Overflow, TextView};
 
 /// Program state
 pub struct Derecrypt {
@@ -66,6 +67,21 @@ fn build_window(app: &Application) {
     build_main_ui(&window);
     window.present();
 
+    // let key_controller = EventControllerKey::new();
+    // key_controller.connect_key_pressed(move |_, keyval, _keycode, state| {
+    //     // Check if Ctrl + O is pressed
+    //     if state.contains(gdk::ModifierType::CONTROL_MASK)
+    //         && keyval == gdk::Key::O
+    //     {
+    //         println!("Ctrl + O pressed!");
+    //
+    //         return Propagation::Stop;
+    //     }
+    //
+    //     Propagation::Proceed
+    // });
+    // window.add_controller(key_controller);
+
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
@@ -75,18 +91,36 @@ fn build_main_ui(window: &ApplicationWindow) {
         .orientation(gtk::Orientation::Vertical)
         .build();
 
-    let text_view =
-        gtk::TextView::builder().hexpand(true).vexpand(true).build();
-
-    let top_row = top_row(window, &text_view);
+    let (textbox, textview) = build_text_box();
+    let top_row = build_top_row(window, &textview);
 
     main_box.append(&top_row);
-    main_box.append(&text_view);
+    main_box.append(&textbox);
 
     window.set_child(Some(&main_box));
 }
 
-fn top_row(window: &ApplicationWindow, textbox: &TextView) -> gtk::Box {
+fn build_text_box() -> (gtk::ScrolledWindow, gtk::TextView) {
+    const SCROLL_MARGIN: i32 = 25;
+    let scroll = gtk::ScrolledWindow::builder()
+        .overflow(Overflow::Hidden)
+        .margin_top(SCROLL_MARGIN)
+        .margin_bottom(SCROLL_MARGIN)
+        .margin_start(SCROLL_MARGIN)
+        .margin_end(SCROLL_MARGIN)
+        .build();
+
+    let textview = gtk::TextView::builder()
+        .hexpand(true)
+        .vexpand(true)
+        .overflow(Overflow::Hidden)
+        .build();
+
+    scroll.set_child(Some(&textview));
+    (scroll, textview)
+}
+
+fn build_top_row(window: &ApplicationWindow, textbox: &TextView) -> gtk::Box {
     let top_row = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .build();
