@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 // use fancy_regex::Regex;
 use std::collections::VecDeque;
+use std::rc::Rc;
 
 pub trait DcMod {
     fn run(&mut self, input: &str) -> String;
@@ -8,20 +10,20 @@ pub trait DcMod {
 /// Something like FL Studio's "Patcher"
 ///
 /// Basically combines multiple operations into one, however you like
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Caster {
     /// The name given to the list of operations by the user
     pub _name: String,
 
     /// The list of operations to run on the input
-    pub list: VecDeque<Box<dyn DcMod>>,
+    pub list: VecDeque<Rc<RefCell<dyn DcMod>>>,
 }
 
 impl DcMod for Caster {
     fn run(&mut self, input: &str) -> String {
         let mut output = input.to_owned();
         for cast in self.list.iter_mut() {
-            output = cast.run(&output);
+            output = cast.borrow_mut().run(&output);
         }
 
         output
