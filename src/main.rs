@@ -6,12 +6,13 @@
 
 use gtk::glib::Propagation;
 
+use std::path::PathBuf;
 use std::sync::RwLock;
 
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
-use gtk::{gdk, EventControllerKey, TextView};
+use gtk::{gdk, EventControllerKey, Label, TextView};
 
 mod consts;
 use consts::{APP_ID, DC_VERSION};
@@ -19,13 +20,13 @@ use consts::{APP_ID, DC_VERSION};
 mod modules;
 
 mod components;
-use components::{build_main_ui, open_file_dialog};
+use components::{build_main_ui, open_file_dialog, update_outfile_dialog};
 
 static DC: RwLock<Derecrypt> = RwLock::new(Derecrypt::new());
 
 /// Program state
 pub struct Derecrypt {
-    pub outfile: Option<String>,
+    pub outfile: Option<PathBuf>,
 }
 
 impl Derecrypt {
@@ -79,7 +80,14 @@ fn build_window(app: &Application) {
         }
 
         if ctrl_down && keyval.to_lower() == gdk::Key::s {
-            save_to_outfile(&textview2);
+            if shift_down {
+                // Updates the output location and then saves the buffer to disk.
+                update_outfile_dialog(&window2, &outfile_label, &textview2);
+            } else {
+                // Saves the buffer to disk.
+                save_to_outfile(&textview2);
+            }
+
             return Propagation::Stop;
         }
 
@@ -93,10 +101,31 @@ fn build_window(app: &Application) {
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
-fn save_to_outfile(textview: &TextView) {
+pub fn save_to_outfile(textview: &TextView) {
+    let dc = DC.read().unwrap();
+
     let buffer = textview.buffer();
     let text = buffer.text(&buffer.start_iter(), &buffer.end_iter(), false);
-    let Some(outfile) = DC.read().unwrap().outfile.as_ref() else {
+
+    let Some(outfile) = dc.outfile.as_ref() else {
         return;
     };
+
+    println!("Saving buffer to {:?}", &outfile);
+    std::fs::write(outfile, text).unwrap();
+}
+
+fn set_outfile(outfile: impl Into<PathBuf>, outfile_label: &Label) {
+    let mut dc = DC.write().unwrap();
+    dc.outfile = Some(outfile.into());
+    outfile_label.set_label(&outfile_fmt(&dc.outfile));
+}
+
+fn outfile_fmt(outfile: &Option<PathBuf>) -> String {
+    let path = outfile
+        .as_ref()
+        .map(|v| v.to_string_lossy())
+        .unwrap_or("<none>".into());
+
+    format!("Output Path: {}", path)
 }

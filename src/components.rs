@@ -1,9 +1,11 @@
+use std::path::PathBuf;
+
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
 use gtk::{Label, Overflow, TextView};
 
-use crate::DC;
+use crate::{outfile_fmt, save_to_outfile, set_outfile, DC};
 
 pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
@@ -49,7 +51,7 @@ pub fn open_file_dialog(
     window: &ApplicationWindow,
     textbox: &TextView,
     outfile_label: &Label,
-    overwrite_outfile: bool,
+    update_outfile_path: bool,
 ) {
     let dialog = gtk::FileDialog::builder().build();
 
@@ -65,13 +67,34 @@ pub fn open_file_dialog(
         let content = std::fs::read_to_string(&path).unwrap();
 
         textbox2.buffer().set_text(&content);
-        if overwrite_outfile {
-            let path_str = path.to_str().unwrap().to_string();
 
-            let mut dc = DC.write().unwrap();
-            dc.outfile = Some(path_str);
-            outfile_label2.set_label(&outfile_fmt(&dc.outfile));
+        if update_outfile_path {
+            set_outfile(path, &outfile_label2)
         }
+    });
+}
+
+/// Open a file dialog to select a file to open
+pub fn update_outfile_dialog(
+    window: &ApplicationWindow,
+    outfile_label: &Label,
+    textbox: &TextView,
+) {
+    let dialog = gtk::FileDialog::builder().build();
+
+    let outfile_label2 = outfile_label.clone();
+    let textbox2 = textbox.clone();
+    dialog.save(Some(window), None::<&Cancellable>, move |file| {
+        let Ok(file) = file else {
+            println!("No file selected.");
+            return;
+        };
+
+        let path = file.path().unwrap();
+        println!("Updating outfile path to {:?}", path);
+
+        set_outfile(path, &outfile_label2);
+        save_to_outfile(&textbox2);
     });
 }
 
@@ -124,13 +147,4 @@ fn build_top_row(
     top_row.append(&box3);
 
     (top_row, outfile_label)
-}
-
-fn outfile_fmt(outfile: &Option<String>) -> String {
-    let path = outfile
-        .as_ref()
-        .map(|v| v.to_string())
-        .unwrap_or("<none>".to_string());
-
-    format!("Output Path: {}", path)
 }
