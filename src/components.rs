@@ -1,14 +1,27 @@
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
-use gtk::{Align, Label, Overflow, Paned, ScrolledWindow, TextView};
+use gtk::{
+    Align, Button, FileDialog, Label, Orientation, Overflow, Paned,
+    ScrolledWindow, Separator, TextView,
+};
 
 use crate::{outfile_fmt, save_to_outfile, set_outfile, DC};
+
+macro_rules! append_toolbox_modules {
+    ($toolbox:expr; $($module:ident),*) => {{
+        let widget = gtk::Box::builder()
+            .orientation(Orientation::Vertical)
+            .build();
+
+        $toolbox.append(&widget);
+    }};
+}
 
 pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
         .hexpand(true)
-        .orientation(gtk::Orientation::Vertical)
+        .orientation(Orientation::Vertical)
         .build();
 
     let (paned, textview, toolbox) = build_main_paned();
@@ -16,7 +29,7 @@ pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
         build_top_row(window, &textview, &paned, &toolbox);
 
     main_box.append(&top_row);
-    main_box.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+    main_box.append(&Separator::new(Orientation::Horizontal));
     main_box.append(&paned);
 
     window.set_child(Some(&main_box));
@@ -37,17 +50,18 @@ fn build_main_paned() -> (Paned, TextView, gtk::Box) {
 
 fn build_toolbox() -> gtk::Box {
     let toolbox = gtk::Box::builder()
-        .orientation(gtk::Orientation::Vertical)
+        .orientation(Orientation::Vertical)
         .build();
 
-    let label = gtk::Label::builder()
+    let label = Label::builder()
         .label("Toolbox")
         .name("toolbox_label")
-        .halign(gtk::Align::Center)
+        .halign(Align::Center)
         .build();
 
     toolbox.append(&label);
-    toolbox.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+    toolbox.append(&Separator::new(Orientation::Horizontal));
+    append_toolbox_modules!(toolbox; Deflate);
 
     toolbox
 }
@@ -56,7 +70,7 @@ fn build_text_box() -> (ScrolledWindow, TextView) {
     const SCROLL_MARGIN: i32 = 15;
 
     // the scrollable window containing the textview
-    let scroll = gtk::ScrolledWindow::builder()
+    let scroll = ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
         .margin_top(SCROLL_MARGIN)
         .margin_bottom(SCROLL_MARGIN)
@@ -64,7 +78,7 @@ fn build_text_box() -> (ScrolledWindow, TextView) {
         .margin_end(SCROLL_MARGIN)
         .build();
 
-    let textview = gtk::TextView::builder()
+    let textview = TextView::builder()
         .hexpand(true)
         .vexpand(true)
         .monospace(true)
@@ -83,7 +97,7 @@ pub fn open_file_dialog(
     outfile_label: &Label,
     update_outfile_path: bool,
 ) {
-    let dialog = gtk::FileDialog::builder().build();
+    let dialog = FileDialog::builder().build();
 
     let textbox2 = textbox.clone();
     let outfile_label2 = outfile_label.clone();
@@ -110,7 +124,7 @@ pub fn update_outfile_dialog(
     outfile_label: &Label,
     textbox: &TextView,
 ) {
-    let dialog = gtk::FileDialog::builder().build();
+    let dialog = FileDialog::builder().build();
 
     let outfile_label2 = outfile_label.clone();
     let textbox2 = textbox.clone();
@@ -137,36 +151,36 @@ fn build_top_row(
     let dc = DC.read().unwrap();
 
     let top_row = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
+        .orientation(Orientation::Horizontal)
         .homogeneous(true)
         .build();
 
     // make the file menu buttons
     let buttons_box = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
+        .orientation(Orientation::Horizontal)
         .margin_end(100)
         .build();
 
-    let toolbox_button = gtk::Button::builder().label("Toolbox").build();
-    let open_button = gtk::Button::builder().label("Open").build();
-    let save_button = gtk::Button::builder().label("Save").build();
+    let toolbox_button = Button::builder().label("Toolbox").build();
+    let open_button = Button::builder().label("Open").build();
+    let save_button = Button::builder().label("Save").build();
 
     buttons_box.append(&toolbox_button);
     buttons_box.append(&open_button);
     buttons_box.append(&save_button);
 
     // make the output path label
-    let outfile_label = gtk::Label::builder()
+    let outfile_label = Label::builder()
         .label(outfile_fmt(&dc.outfile))
         .name("outfile_label")
         .build();
 
     let cast_box = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
+        .orientation(Orientation::Horizontal)
         .halign(Align::End)
         .build();
 
-    let cast_button = gtk::Button::builder().label("Cast").build();
+    let cast_button = Button::builder().label("Cast").build();
     cast_box.append(&cast_button);
 
     // connect the button signals
