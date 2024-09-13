@@ -6,17 +6,7 @@ use gtk::{
     ScrolledWindow, Separator, TextView,
 };
 
-use crate::{outfile_fmt, save_to_outfile, set_outfile, DC};
-
-macro_rules! append_toolbox_modules {
-    ($toolbox:expr; $($module:ident),*) => {{
-        let widget = gtk::Box::builder()
-            .orientation(Orientation::Vertical)
-            .build();
-
-        $toolbox.append(&widget);
-    }};
-}
+use crate::{outfile_fmt, save_to_outfile, set_outfile, DC, MODULE_REGISTRY};
 
 pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
@@ -42,7 +32,7 @@ fn build_main_paned() -> (Paned, TextView, gtk::Box) {
     let toolbox = build_toolbox();
     let (textbox, textview) = build_text_box();
 
-    pane.set_start_child(Some(&toolbox));
+    // pane.set_start_child(Some(&toolbox));
     pane.set_end_child(Some(&textbox));
 
     (pane, textview, toolbox)
@@ -61,7 +51,11 @@ fn build_toolbox() -> gtk::Box {
 
     toolbox.append(&label);
     toolbox.append(&Separator::new(Orientation::Horizontal));
-    append_toolbox_modules!(toolbox; Deflate);
+
+    for module in MODULE_REGISTRY.iter() {
+        let button = Button::builder().label(module.0.to_owned()).build();
+        toolbox.append(&button);
+    }
 
     toolbox
 }
@@ -72,6 +66,7 @@ fn build_text_box() -> (ScrolledWindow, TextView) {
     // the scrollable window containing the textview
     let scroll = ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
+        .width_request(600)
         .margin_top(SCROLL_MARGIN)
         .margin_bottom(SCROLL_MARGIN)
         .margin_start(SCROLL_MARGIN)

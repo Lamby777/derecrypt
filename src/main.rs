@@ -4,8 +4,9 @@
 ** - RC 		9/11/2024
 */
 
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::RwLock;
+use std::sync::{LazyLock, RwLock};
 
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
@@ -17,11 +18,39 @@ mod consts;
 use consts::{APP_ID, DC_VERSION};
 
 mod modules;
+use modules::DcMod;
 
 mod components;
 use components::{build_main_ui, open_file_dialog, update_outfile_dialog};
 
+// good grief, what an awesome amazing way to start off the source code...
+// i promise this is only used for lazy init stuff
+fn leak<T>(value: T) -> &'static T {
+    Box::leak(Box::new(value))
+}
+
+macro_rules! insert_modules {
+    ($registry:ident; $($module:ident),*) => {{
+        $(
+            $registry.insert(stringify!($module), crate::leak(modules::$module::default()));
+        )*
+    }};
+}
+
 static DC: RwLock<Derecrypt> = RwLock::new(Derecrypt::new());
+
+/// List of all modules with their default settings.
+/// Meant to be copied out for use in individual instances.
+static MODULE_REGISTRY: LazyLock<HashMap<&'static str, &'static dyn DcMod>> =
+    LazyLock::new(|| {
+        let mut registry: HashMap<&'static str, &'static dyn DcMod> =
+            HashMap::new();
+
+        use modules::*;
+        insert_modules!(registry; Deflate, Strip, Length, Caster);
+
+        registry
+    });
 
 /// Program state
 pub struct Derecrypt {
