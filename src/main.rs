@@ -4,14 +4,13 @@
 ** - RC 		9/11/2024
 */
 
-use gtk::glib::Propagation;
-
 use std::path::PathBuf;
 use std::sync::RwLock;
 
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
+use gtk::glib::Propagation;
 use gtk::{gdk, EventControllerKey, Label, TextView};
 
 mod consts;

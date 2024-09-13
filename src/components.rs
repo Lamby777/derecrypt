@@ -1,9 +1,7 @@
-use std::path::PathBuf;
-
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
-use gtk::{Label, Overflow, TextView};
+use gtk::{Align, Label, Overflow, Paned, ScrolledWindow, TextView};
 
 use crate::{outfile_fmt, save_to_outfile, set_outfile, DC};
 
@@ -13,19 +11,51 @@ pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
         .orientation(gtk::Orientation::Vertical)
         .build();
 
-    let (textbox, textview) = build_text_box();
-    let (top_row, outfile_label) = build_top_row(window, &textview);
+    let (paned, textview, toolbox) = build_main_paned();
+    let (top_row, outfile_label) =
+        build_top_row(window, &textview, &paned, &toolbox);
 
     main_box.append(&top_row);
     main_box.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
-    main_box.append(&textbox);
+    main_box.append(&paned);
 
     window.set_child(Some(&main_box));
     (textview, outfile_label)
 }
 
-fn build_text_box() -> (gtk::ScrolledWindow, gtk::TextView) {
+fn build_main_paned() -> (Paned, TextView, gtk::Box) {
+    let pane = Paned::builder().build();
+
+    let toolbox = build_toolbox();
+    let (textbox, textview) = build_text_box();
+
+    pane.set_start_child(Some(&toolbox));
+    pane.set_end_child(Some(&textbox));
+
+    (pane, textview, toolbox)
+}
+
+fn build_toolbox() -> gtk::Box {
+    let toolbox = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .build();
+
+    let label = gtk::Label::builder()
+        .label("Toolbox")
+        .name("toolbox_label")
+        .halign(gtk::Align::Center)
+        .build();
+
+    toolbox.append(&label);
+    toolbox.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+
+    toolbox
+}
+
+fn build_text_box() -> (ScrolledWindow, TextView) {
     const SCROLL_MARGIN: i32 = 15;
+
+    // the scrollable window containing the textview
     let scroll = gtk::ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
         .margin_top(SCROLL_MARGIN)
@@ -101,12 +131,14 @@ pub fn update_outfile_dialog(
 fn build_top_row(
     window: &ApplicationWindow,
     textbox: &TextView,
+    paned: &Paned,
+    toolbox: &gtk::Box,
 ) -> (gtk::Box, Label) {
     let dc = DC.read().unwrap();
 
     let top_row = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
-        // .homogeneous(true)
+        .homogeneous(true)
         .build();
 
     // make the file menu buttons
@@ -115,11 +147,11 @@ fn build_top_row(
         .margin_end(100)
         .build();
 
-    let cast_button = gtk::Button::builder().label("Cast").build();
+    let toolbox_button = gtk::Button::builder().label("Toolbox").build();
     let open_button = gtk::Button::builder().label("Open").build();
     let save_button = gtk::Button::builder().label("Save").build();
 
-    buttons_box.append(&cast_button);
+    buttons_box.append(&toolbox_button);
     buttons_box.append(&open_button);
     buttons_box.append(&save_button);
 
@@ -129,10 +161,13 @@ fn build_top_row(
         .name("outfile_label")
         .build();
 
-    // make the 3rd box (idk what it's used for yet)
-    let box3 = gtk::Box::builder()
+    let cast_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
+        .halign(Align::End)
         .build();
+
+    let cast_button = gtk::Button::builder().label("Cast").build();
+    cast_box.append(&cast_button);
 
     // connect the button signals
     let window2 = window.clone();
@@ -142,9 +177,21 @@ fn build_top_row(
         open_file_dialog(&window2, &textbox2, &outfile_label2, true)
     });
 
+    let paned2 = paned.clone();
+    let toolbox2 = toolbox.clone();
+    toolbox_button.connect_clicked(move |_| {
+        // toggle the toolbox visibility
+        let new_child = match paned2.start_child() {
+            Some(_) => None,
+            None => Some(&toolbox2),
+        };
+
+        paned2.set_start_child(new_child);
+    });
+
     top_row.append(&buttons_box);
     top_row.append(&outfile_label);
-    top_row.append(&box3);
+    top_row.append(&cast_box);
 
     (top_row, outfile_label)
 }

@@ -1,10 +1,13 @@
 use std::cell::RefCell;
-// use fancy_regex::Regex;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
+// use gtk::Window;
+// use fancy_regex::Regex;
+
 pub trait DcMod {
     fn run(&mut self, input: &str) -> String;
+    // fn draw(&self, window: &Window) {}
 }
 
 /// Something like FL Studio's "Patcher"
