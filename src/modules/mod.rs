@@ -1,7 +1,8 @@
 use dyn_clone::DynClone;
 use gtk::{ApplicationWindow, Window};
 
-use crate::components::build_spells_window;
+use crate::components::spells::build_spells_window;
+
 // use fancy_regex::Regex;
 
 pub trait DcMod: DynClone + Send + Sync {
