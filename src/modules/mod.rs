@@ -1,5 +1,7 @@
 use dyn_clone::DynClone;
-use gtk::Window;
+use gtk::{ApplicationWindow, Window};
+
+use crate::components::build_spells_window;
 // use fancy_regex::Regex;
 
 pub trait DcMod: DynClone + Send + Sync {
@@ -17,10 +19,19 @@ dyn_clone::clone_trait_object!(DcMod);
 
 /// This is not an actual module, but a list of operations.
 /// There will later be a module which uses this list to apply the operations.
-#[derive(Default)]
+#[derive(Clone)]
 pub struct Spell {
     pub ops: Vec<Box<dyn DcMod>>,
     pub window: Window,
+}
+
+impl Spell {
+    pub fn new(app_window: &ApplicationWindow) -> Self {
+        Self {
+            ops: vec![],
+            window: build_spells_window(app_window),
+        }
+    }
 }
 
 #[derive(Clone, Default)]

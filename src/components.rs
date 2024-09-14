@@ -4,10 +4,9 @@ use std::rc::Rc;
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
-use gtk::glib::property::PropertyGet;
 use gtk::{
-    Align, Button, FileDialog, Label, Orientation, Overflow, Paned,
-    ScrolledWindow, Separator, TextView,
+    glib, Align, Button, FileDialog, Label, Orientation, Overflow, Paned,
+    ScrolledWindow, Separator, TextView, Window,
 };
 
 use crate::{
@@ -16,14 +15,14 @@ use crate::{
 
 pub fn build_main_ui(
     window: &ApplicationWindow,
-    spells: Rc<RefCell<SpellsMap>>,
+    spells: &'static Rc<RefCell<SpellsMap>>,
 ) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
         .build();
 
-    let (paned, textview, spells_box) = build_main_paned(spells.clone());
+    let (paned, textview, spells_box) = build_main_paned(spells);
     let (top_row, outfile_label) =
         build_top_row(window, &textview, &paned, &spells_box);
 
@@ -36,7 +35,7 @@ pub fn build_main_ui(
 }
 
 fn build_main_paned(
-    spells: Rc<RefCell<SpellsMap>>,
+    spells: &'static Rc<RefCell<SpellsMap>>,
 ) -> (Paned, TextView, gtk::Box) {
     let pane = Paned::builder().build();
 
@@ -49,7 +48,11 @@ fn build_main_paned(
     (pane, textview, spells_box)
 }
 
-fn build_spells_box(spells: Rc<RefCell<SpellsMap>>) -> gtk::Box {
+pub fn build_spells_window(app_window: &impl IsA<Window>) -> Window {
+    Window::builder().transient_for(app_window).build()
+}
+
+fn build_spells_box(spells: &'static Rc<RefCell<SpellsMap>>) -> gtk::Box {
     let spells_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .build();
@@ -63,13 +66,17 @@ fn build_spells_box(spells: Rc<RefCell<SpellsMap>>) -> gtk::Box {
     spells_box.append(&label);
     spells_box.append(&Separator::new(Orientation::Horizontal));
 
-    for (spell_name, _) in spells.borrow().iter() {
+    for (spell_name, spell) in spells.borrow().iter() {
         let button = Button::builder().label(spell_name).build();
         spells_box.append(&button);
 
-        button.connect_clicked(move |_| {
-            // spells.borrow().get(spell_name).unwrap().window.present();
-        });
+        button.connect_clicked(glib::clone!(
+            #[strong]
+            spell,
+            move |_| {
+                spell.window.present();
+            }
+        ));
     }
 
     spells_box

@@ -72,15 +72,15 @@ impl Default for Derecrypt {
 fn main() -> glib::ExitCode {
     // start the gtk app
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_activate(move |app| build_window(app, default_spells()));
+    app.connect_activate(move |app| build_window(app));
     app.connect_startup(|_| load_css());
     app.run()
 }
 
 /// List of spells the user starts out with
-fn default_spells() -> Rc<RefCell<SpellsMap>> {
+fn default_spells(app_window: &ApplicationWindow) -> Rc<RefCell<SpellsMap>> {
     let mut res = SpellsMap::new();
-    let mut length = Spell::default();
+    let mut length = Spell::new(app_window);
 
     length.ops.push(dyn_clone::clone_box(
         *MODULE_REGISTRY.get("Length").unwrap(),
@@ -101,7 +101,7 @@ fn load_css() {
     );
 }
 
-fn build_window(app: &Application, spells: Rc<RefCell<SpellsMap>>) {
+fn build_window(app: &Application) {
     // Create a window
     let window = ApplicationWindow::builder()
         .application(app)
@@ -110,6 +110,8 @@ fn build_window(app: &Application, spells: Rc<RefCell<SpellsMap>>) {
         .title(format!("derecrypt v{}", DC_VERSION))
         .build()
         .clone();
+
+    let spells = leak(default_spells(&window));
 
     // Present window
     let (textview, outfile_label) = build_main_ui(&window, spells);
