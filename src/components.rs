@@ -1,22 +1,31 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
+use gtk::glib::property::PropertyGet;
 use gtk::{
     Align, Button, FileDialog, Label, Orientation, Overflow, Paned,
     ScrolledWindow, Separator, TextView,
 };
 
-use crate::{outfile_fmt, save_to_outfile, set_outfile, DC, MODULE_REGISTRY};
+use crate::{
+    outfile_fmt, save_to_outfile, set_outfile, SpellsMap, DC, MODULE_REGISTRY,
+};
 
-pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
+pub fn build_main_ui(
+    window: &ApplicationWindow,
+    spells: Rc<RefCell<SpellsMap>>,
+) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
         .build();
 
-    let (paned, textview, toolbox) = build_main_paned();
+    let (paned, textview, spells_box) = build_main_paned(spells.clone());
     let (top_row, outfile_label) =
-        build_top_row(window, &textview, &paned, &toolbox);
+        build_top_row(window, &textview, &paned, &spells_box);
 
     main_box.append(&top_row);
     main_box.append(&Separator::new(Orientation::Horizontal));
@@ -26,16 +35,44 @@ pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
     (textview, outfile_label)
 }
 
-fn build_main_paned() -> (Paned, TextView, gtk::Box) {
+fn build_main_paned(
+    spells: Rc<RefCell<SpellsMap>>,
+) -> (Paned, TextView, gtk::Box) {
     let pane = Paned::builder().build();
 
-    let toolbox = build_toolbox();
+    let spells_box = build_spells_box(spells);
     let (textbox, textview) = build_text_box();
 
     // pane.set_start_child(Some(&toolbox));
     pane.set_end_child(Some(&textbox));
 
-    (pane, textview, toolbox)
+    (pane, textview, spells_box)
+}
+
+fn build_spells_box(spells: Rc<RefCell<SpellsMap>>) -> gtk::Box {
+    let spells_box = gtk::Box::builder()
+        .orientation(Orientation::Vertical)
+        .build();
+
+    let label = Label::builder()
+        .label("Spells")
+        .name("spells_box_label")
+        .halign(Align::Center)
+        .build();
+
+    spells_box.append(&label);
+    spells_box.append(&Separator::new(Orientation::Horizontal));
+
+    for (spell_name, _) in spells.borrow().iter() {
+        let button = Button::builder().label(spell_name).build();
+        spells_box.append(&button);
+
+        button.connect_clicked(move |_| {
+            // spells.borrow().get(spell_name).unwrap().window.present();
+        });
+    }
+
+    spells_box
 }
 
 fn build_toolbox() -> gtk::Box {
@@ -56,6 +93,7 @@ fn build_toolbox() -> gtk::Box {
         let button = Button::builder().label(module.0.to_owned()).build();
         toolbox.append(&button);
 
+        // Add the module's default state to the current spell
         button.connect_clicked(move |_| {});
     }
 
@@ -158,11 +196,11 @@ fn build_top_row(
         .margin_end(100)
         .build();
 
-    let toolbox_button = Button::builder().label("Toolbox").build();
+    let spells_box_button = Button::builder().label("Spells").build();
     let open_button = Button::builder().label("Open").build();
     let save_button = Button::builder().label("Save").build();
 
-    buttons_box.append(&toolbox_button);
+    buttons_box.append(&spells_box_button);
     buttons_box.append(&open_button);
     buttons_box.append(&save_button);
 
@@ -172,13 +210,13 @@ fn build_top_row(
         .name("outfile_label")
         .build();
 
-    let cast_box = gtk::Box::builder()
-        .orientation(Orientation::Horizontal)
-        .halign(Align::End)
-        .build();
+    // let cast_box = gtk::Box::builder()
+    //     .orientation(Orientation::Horizontal)
+    //     .halign(Align::End)
+    //     .build();
 
-    let cast_button = Button::builder().label("Cast").build();
-    cast_box.append(&cast_button);
+    // let cast_button = Button::builder().label("Cast").build();
+    // cast_box.append(&cast_button);
 
     // connect the button signals
     let window2 = window.clone();
@@ -190,7 +228,7 @@ fn build_top_row(
 
     let paned2 = paned.clone();
     let toolbox2 = toolbox.clone();
-    toolbox_button.connect_clicked(move |_| {
+    spells_box_button.connect_clicked(move |_| {
         // toggle the toolbox visibility
         let new_child = match paned2.start_child() {
             Some(_) => None,
@@ -202,7 +240,7 @@ fn build_top_row(
 
     top_row.append(&buttons_box);
     top_row.append(&outfile_label);
-    top_row.append(&cast_box);
+    // top_row.append(&cast_box);
 
     (top_row, outfile_label)
 }

@@ -18,9 +18,9 @@ dyn_clone::clone_trait_object!(DcMod);
 /// This is not an actual module, but a list of operations.
 /// There will later be a module which uses this list to apply the operations.
 #[derive(Default)]
-pub struct OperationList {
-    pub _ops: Vec<Box<dyn DcMod>>,
-    pub _window: Window,
+pub struct Spell {
+    pub ops: Vec<Box<dyn DcMod>>,
+    pub window: Window,
 }
 
 #[derive(Clone, Default)]

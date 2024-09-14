@@ -20,12 +20,12 @@ mod consts;
 use consts::{APP_ID, DC_VERSION};
 
 mod modules;
-use modules::{DcMod, OperationList};
+use modules::{DcMod, Spell};
 
 mod components;
 use components::{build_main_ui, open_file_dialog, update_outfile_dialog};
 
-type OpMap = HashMap<String, OperationList>;
+type SpellsMap = HashMap<String, Spell>;
 
 // good grief, what an awesome amazing way to start off the source code...
 // i promise this is only used for lazy init stuff
@@ -45,7 +45,7 @@ static DC: LazyLock<RwLock<Derecrypt>> =
     LazyLock::new(|| RwLock::new(Derecrypt::default()));
 
 /// List of all modules with their default settings.
-/// Meant to be copied out for use in individual instances.
+/// Meant to be copied out for use in spells.
 static MODULE_REGISTRY: LazyLock<HashMap<&'static str, &'static dyn DcMod>> =
     LazyLock::new(|| {
         let mut registry: HashMap<&'static str, &'static dyn DcMod> =
@@ -70,14 +70,24 @@ impl Default for Derecrypt {
 }
 
 fn main() -> glib::ExitCode {
-    let ops_list =
-        Rc::new(RefCell::new(HashMap::<String, OperationList>::new()));
-
     // start the gtk app
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_activate(move |app| build_window(app, ops_list.clone()));
+    app.connect_activate(move |app| build_window(app, default_spells()));
     app.connect_startup(|_| load_css());
     app.run()
+}
+
+/// List of spells the user starts out with
+fn default_spells() -> Rc<RefCell<SpellsMap>> {
+    let mut res = SpellsMap::new();
+    let mut length = Spell::default();
+
+    length.ops.push(dyn_clone::clone_box(
+        *MODULE_REGISTRY.get("Length").unwrap(),
+    ));
+    res.insert("Length (Default)".into(), length);
+
+    Rc::new(RefCell::new(res))
 }
 
 fn load_css() {
@@ -91,7 +101,7 @@ fn load_css() {
     );
 }
 
-fn build_window(app: &Application, ops_list: Rc<RefCell<OpMap>>) {
+fn build_window(app: &Application, spells: Rc<RefCell<SpellsMap>>) {
     // Create a window
     let window = ApplicationWindow::builder()
         .application(app)
@@ -102,7 +112,7 @@ fn build_window(app: &Application, ops_list: Rc<RefCell<OpMap>>) {
         .clone();
 
     // Present window
-    let (textview, outfile_label) = build_main_ui(&window);
+    let (textview, outfile_label) = build_main_ui(&window, spells);
 
     let key_controller = EventControllerKey::new();
     let window2 = window.clone();
