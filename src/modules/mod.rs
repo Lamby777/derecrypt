@@ -3,6 +3,9 @@ use gtk::Window;
 // use fancy_regex::Regex;
 
 pub trait DcMod: DynClone + Send + Sync {
+    /// Display name of the operation
+    fn op_display_name(&self) -> &'static str;
+
     /// Run the operation on the input
     fn run(&mut self, input: &str) -> String;
 
@@ -12,32 +15,21 @@ pub trait DcMod: DynClone + Send + Sync {
 
 dyn_clone::clone_trait_object!(DcMod);
 
-/// Something like FL Studio's "Patcher"
-///
-/// Basically combines multiple operations into one, however you like
-#[derive(Clone, Default)]
-pub struct Caster {
-    /// The name given to the list of operations by the user
-    pub _name: String,
-
-    /// The list of operations to run on the input
-    pub list: Vec<Box<dyn DcMod>>,
-}
-
-impl DcMod for Caster {
-    fn run(&mut self, input: &str) -> String {
-        let mut output = input.to_owned();
-        for cast in self.list.iter_mut() {
-            output = cast.run(&output);
-        }
-
-        output
-    }
+/// This is not an actual module, but a list of operations.
+/// There will later be a module which uses this list to apply the operations.
+#[derive(Default)]
+pub struct OperationList {
+    pub _ops: Vec<Box<dyn DcMod>>,
+    pub _window: Window,
 }
 
 #[derive(Clone, Default)]
 pub struct Deflate;
 impl DcMod for Deflate {
+    fn op_display_name(&self) -> &'static str {
+        "Deflate"
+    }
+
     fn run(&mut self, input: &str) -> String {
         let mut out = input.to_owned();
         out.retain(|c| !c.is_whitespace());
@@ -48,6 +40,10 @@ impl DcMod for Deflate {
 #[derive(Clone, Default)]
 pub struct Strip;
 impl DcMod for Strip {
+    fn op_display_name(&self) -> &'static str {
+        "Strip"
+    }
+
     fn run(&mut self, input: &str) -> String {
         input.trim().to_string()
     }
@@ -56,6 +52,10 @@ impl DcMod for Strip {
 #[derive(Clone, Default)]
 pub struct Length;
 impl DcMod for Length {
+    fn op_display_name(&self) -> &'static str {
+        "Length"
+    }
+
     fn run(&mut self, input: &str) -> String {
         input.len().to_string()
     }

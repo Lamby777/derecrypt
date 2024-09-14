@@ -55,6 +55,8 @@ fn build_toolbox() -> gtk::Box {
     for module in MODULE_REGISTRY.iter() {
         let button = Button::builder().label(module.0.to_owned()).build();
         toolbox.append(&button);
+
+        button.connect_clicked(move |_| {});
     }
 
     toolbox

@@ -4,8 +4,10 @@
 ** - RC 		9/11/2024
 */
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::sync::{LazyLock, RwLock};
 
 use adw::gtk::{ApplicationWindow, CssProvider};
@@ -18,10 +20,12 @@ mod consts;
 use consts::{APP_ID, DC_VERSION};
 
 mod modules;
-use modules::DcMod;
+use modules::{DcMod, OperationList};
 
 mod components;
 use components::{build_main_ui, open_file_dialog, update_outfile_dialog};
+
+type OpMap = HashMap<String, OperationList>;
 
 // good grief, what an awesome amazing way to start off the source code...
 // i promise this is only used for lazy init stuff
@@ -32,12 +36,13 @@ fn leak<T>(value: T) -> &'static T {
 macro_rules! insert_modules {
     ($registry:ident; $($module:ident),*) => {{
         $(
-            $registry.insert(stringify!($module), crate::leak(modules::$module::default()));
+            $registry.insert(stringify!($module), $crate::leak(modules::$module::default()));
         )*
     }};
 }
 
-static DC: RwLock<Derecrypt> = RwLock::new(Derecrypt::new());
+static DC: LazyLock<RwLock<Derecrypt>> =
+    LazyLock::new(|| RwLock::new(Derecrypt::default()));
 
 /// List of all modules with their default settings.
 /// Meant to be copied out for use in individual instances.
@@ -47,26 +52,30 @@ static MODULE_REGISTRY: LazyLock<HashMap<&'static str, &'static dyn DcMod>> =
             HashMap::new();
 
         use modules::*;
-        insert_modules!(registry; Deflate, Strip, Length, Caster);
+        insert_modules!(registry; Deflate, Strip, Length);
 
         registry
     });
 
 /// Program state
 pub struct Derecrypt {
+    /// Path to save the buffer to
     pub outfile: Option<PathBuf>,
 }
 
-impl Derecrypt {
-    const fn new() -> Self {
+impl Default for Derecrypt {
+    fn default() -> Self {
         Self { outfile: None }
     }
 }
 
 fn main() -> glib::ExitCode {
+    let ops_list =
+        Rc::new(RefCell::new(HashMap::<String, OperationList>::new()));
+
     // start the gtk app
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_activate(build_window);
+    app.connect_activate(move |app| build_window(app, ops_list.clone()));
     app.connect_startup(|_| load_css());
     app.run()
 }
@@ -82,7 +91,7 @@ fn load_css() {
     );
 }
 
-fn build_window(app: &Application) {
+fn build_window(app: &Application, ops_list: Rc<RefCell<OpMap>>) {
     // Create a window
     let window = ApplicationWindow::builder()
         .application(app)
