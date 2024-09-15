@@ -10,7 +10,7 @@ pub trait DcMod: DynClone + Send + Sync {
     fn op_display_name(&self) -> &'static str;
 
     /// Run the operation on the input
-    fn run(&mut self, input: &str) -> String;
+    fn run(&self, input: &str) -> String;
 
     /// Draw onto the GTK window
     fn draw(&self, _window: &Window) {}
@@ -28,10 +28,16 @@ pub struct Spell {
 
 impl Spell {
     pub fn new() -> Self {
-        Self {
-            ops: vec![],
-            window: build_spells_window(),
-        }
+        let mut ops = vec![];
+        let window = build_spells_window(&mut ops);
+
+        Self { ops, window }
+    }
+
+    pub fn run(&mut self, input: &str) -> String {
+        self.ops
+            .iter()
+            .fold(input.to_owned(), |acc, op| op.run(&acc))
     }
 }
 
@@ -42,7 +48,7 @@ impl DcMod for Deflate {
         "Deflate"
     }
 
-    fn run(&mut self, input: &str) -> String {
+    fn run(&self, input: &str) -> String {
         let mut out = input.to_owned();
         out.retain(|c| !c.is_whitespace());
         out
@@ -56,7 +62,7 @@ impl DcMod for Strip {
         "Strip"
     }
 
-    fn run(&mut self, input: &str) -> String {
+    fn run(&self, input: &str) -> String {
         input.trim().to_string()
     }
 }
@@ -68,7 +74,7 @@ impl DcMod for Length {
         "Length"
     }
 
-    fn run(&mut self, input: &str) -> String {
+    fn run(&self, input: &str) -> String {
         input.len().to_string()
     }
 }

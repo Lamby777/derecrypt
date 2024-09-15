@@ -167,6 +167,15 @@ fn buffer_text() -> String {
         .to_string()
 }
 
+fn run_spell(spell_name: &str) {
+    let mut spell =
+        SPELLS.with_borrow(|spells| spells.get(spell_name).unwrap().clone());
+    let spell_output = spell.run(&buffer_text());
+    DC.with_borrow_mut(|dc| {
+        dc.textbox.buffer().set_text(&spell_output);
+    });
+}
+
 fn save_to_outfile() {
     let outfile = DC.with_borrow(|dc| dc.outfile.clone());
 

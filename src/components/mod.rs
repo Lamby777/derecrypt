@@ -8,7 +8,7 @@ use gtk::{
 
 pub mod spells;
 
-use crate::{outfile_fmt, save_to_outfile, set_outfile, DC, SPELLS};
+use crate::{outfile_fmt, run_spell, save_to_outfile, set_outfile, DC, SPELLS};
 
 pub fn build_main_ui(window: &ApplicationWindow) -> Label {
     let main_box = gtk::Box::builder()
@@ -56,17 +56,38 @@ pub fn build_spells_box() -> gtk::Box {
 
     let spells = SPELLS.with_borrow(|spells| spells.clone());
 
-    for (spell_name, spell) in spells.iter() {
+    for (spell_name, _) in spells.iter() {
         let button = Button::builder().label(spell_name).build();
         spells_box.append(&button);
 
+        // if left click, open the editor
         button.connect_clicked(glib::clone!(
             #[strong]
-            spell,
+            spell_name,
             move |_| {
-                spell.window.present();
+                SPELLS
+                    .with_borrow(|spells| spells.clone())
+                    .get(&spell_name)
+                    .unwrap()
+                    .window
+                    .present();
             }
         ));
+
+        // if right click, run the spell
+        let gesture = gtk::GestureClick::builder()
+            .button(gtk::gdk::ffi::GDK_BUTTON_SECONDARY as u32)
+            .build();
+
+        gesture.connect_pressed(glib::clone!(
+            #[strong]
+            spell_name,
+            move |gesture, _, _, _| {
+                gesture.set_state(gtk::EventSequenceState::Claimed);
+                run_spell(&spell_name);
+            }
+        ));
+        button.add_controller(gesture);
     }
 
     spells_box

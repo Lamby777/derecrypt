@@ -3,9 +3,11 @@ use gtk::{
     glib, Align, Button, Entry, Label, Orientation, Paned, Separator, Window,
 };
 
-use crate::{buffer_text, DC, MODULE_REGISTRY, SPELLS};
+use crate::modules::DcMod;
+use crate::{buffer_text, run_spell, DC, MODULE_REGISTRY, SPELLS};
 
-pub fn build_spells_window() -> Window {
+// TODO use mut slice instead of vec
+pub fn build_spells_window(ops: &mut Vec<Box<dyn DcMod>>) -> Window {
     let window = Window::builder()
         .width_request(800)
         .height_request(600)
@@ -96,17 +98,7 @@ fn build_top_row() -> (gtk::Box, Entry) {
 
     let cast_button = Button::builder().label("Cast").build();
     cast_button.connect_clicked(glib::clone!(move |_| {
-        let content = buffer_text();
-
-        let spellname = "Length (Default)";
-        let mut spell =
-            SPELLS.with_borrow(|spells| spells.get(spellname).unwrap().clone());
-
-        let output = spell.ops.iter_mut().fold(content, |acc, op| op.run(&acc));
-
-        DC.with_borrow_mut(|dc| {
-            dc.textbox.buffer().set_text(&output);
-        });
+        run_spell("Length (Default)");
     }));
 
     top_row.append(&spellname_entry);
