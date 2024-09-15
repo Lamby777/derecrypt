@@ -180,23 +180,29 @@ fn build_top_row(
         .build();
 
     // connect the button signals
-    let window2 = window.clone();
-    let outfile_label2 = outfile_label.clone();
-    open_button.connect_clicked(move |_| {
-        open_file_dialog(&window2, &outfile_label2, true)
-    });
+    open_button.connect_clicked(glib::clone!(
+        #[strong]
+        window,
+        #[strong]
+        outfile_label,
+        move |_| open_file_dialog(&window, &outfile_label, true)
+    ));
 
-    let paned2 = paned.clone();
-    let toolbox2 = spells_box.clone();
-    spells_box_button.connect_clicked(move |_| {
-        // toggle the toolbox visibility
-        let new_child = match paned2.start_child() {
-            Some(_) => None,
-            None => Some(&toolbox2),
-        };
+    spells_box_button.connect_clicked(glib::clone!(
+        #[strong]
+        paned,
+        #[strong]
+        spells_box,
+        move |_| {
+            // toggle the toolbox visibility
+            let new_child = match paned.start_child() {
+                Some(_) => None,
+                None => Some(&spells_box),
+            };
 
-        paned2.set_start_child(new_child);
-    });
+            paned.set_start_child(new_child);
+        }
+    ));
 
     top_row.append(&buttons_box);
     top_row.append(&outfile_label);
