@@ -1,7 +1,10 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use adw::prelude::*;
 use gtk::{glib, Align, Button, Entry, Label, Orientation, Paned, Separator};
 
-use crate::modules::Spell;
+use crate::modules::{DcMod, Spell};
 use crate::{run_spell, MODULE_REGISTRY};
 
 pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
@@ -11,12 +14,11 @@ pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
         .build();
 
     let blueprint = build_blueprint_box();
-    let toolbox = build_toolbox(&blueprint);
     let paned = Paned::builder()
         .orientation(Orientation::Horizontal)
         .vexpand(true)
         .build();
-    paned.set_start_child(Some(&toolbox));
+    paned.set_start_child(Some(&build_toolbox(&blueprint, spell.ops.clone())));
     paned.set_end_child(Some(&blueprint));
 
     let (top_row, _spellname_label) = build_top_row();
@@ -43,7 +45,10 @@ fn build_blueprint_box() -> gtk::Box {
     blueprint
 }
 
-fn build_toolbox(_blueprint: &gtk::Box) -> gtk::Box {
+fn build_toolbox(
+    _blueprint: &gtk::Box,
+    ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
+) -> gtk::Box {
     let toolbox = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .build();
@@ -63,10 +68,15 @@ fn build_toolbox(_blueprint: &gtk::Box) -> gtk::Box {
         toolbox.append(&button);
 
         // Add the module's default state to the current spell
-        let _module_default = dyn_clone::clone_box(*module_default);
-        button.connect_clicked(glib::clone!(move |_| {
-            // spell.window.present();
-        }));
+        button.connect_clicked(glib::clone!(
+            #[strong]
+            ops,
+            #[strong]
+            module_default,
+            move |_| {
+                ops.borrow_mut().push(dyn_clone::clone_box(module_default));
+            }
+        ));
     }
 
     toolbox

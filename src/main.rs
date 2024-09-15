@@ -99,6 +99,8 @@ fn default_spells() -> RefCell<SpellsMap> {
         .push(dyn_clone::clone_box(MODULE_REGISTRY.with(|v| v["Length"])));
     res.insert("Length (Default)".into(), length);
 
+    res.insert("Empty".into(), Spell::new());
+
     RefCell::new(res)
 }
 
