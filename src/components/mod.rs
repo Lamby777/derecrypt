@@ -65,12 +65,7 @@ pub fn build_spells_box() -> gtk::Box {
             #[strong]
             spell_name,
             move |_| {
-                SPELLS
-                    .with_borrow(|spells| spells.clone())
-                    .get(&spell_name)
-                    .unwrap()
-                    .window
-                    .present();
+                run_spell(&spell_name);
             }
         ));
 
@@ -84,7 +79,12 @@ pub fn build_spells_box() -> gtk::Box {
             spell_name,
             move |gesture, _, _, _| {
                 gesture.set_state(gtk::EventSequenceState::Claimed);
-                run_spell(&spell_name);
+                SPELLS
+                    .with_borrow(|spells| spells.clone())
+                    .get(&spell_name)
+                    .unwrap()
+                    .window
+                    .present();
             }
         ));
         button.add_controller(gesture);
