@@ -161,6 +161,7 @@ fn build_window(app: &Application) {
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
+/// Get the text from the main textview's buffer
 fn buffer_text() -> String {
     let textbox = DC.with_borrow(|dc| dc.textbox.clone());
     let buffer = textbox.buffer();
@@ -170,7 +171,8 @@ fn buffer_text() -> String {
         .to_string()
 }
 
-fn run_spell(spell_name: &str) {
+/// Run a spell by its given name
+fn run_spell_by_id(spell_name: &str) {
     let mut spell =
         SPELLS.with_borrow(|spells| spells.get(spell_name).unwrap().clone());
     let spell_output = spell.run(&buffer_text());
@@ -179,6 +181,7 @@ fn run_spell(spell_name: &str) {
     });
 }
 
+/// Save the buffer to the output file
 fn save_to_outfile() {
     let outfile = DC.with_borrow(|dc| dc.outfile.clone());
 
@@ -190,6 +193,7 @@ fn save_to_outfile() {
     std::fs::write(outfile, buffer_text()).unwrap();
 }
 
+/// Change the output file path
 fn set_outfile(outfile: impl Into<PathBuf>, outfile_label: &Label) {
     let outfile = DC.with_borrow_mut(|dc| {
         dc.outfile = Some(outfile.into());
@@ -199,6 +203,7 @@ fn set_outfile(outfile: impl Into<PathBuf>, outfile_label: &Label) {
     outfile_label.set_label(&outfile_fmt(&outfile));
 }
 
+/// Format the output file path for display on the top bar
 fn outfile_fmt(outfile: &Option<PathBuf>) -> String {
     let path = outfile
         .as_ref()

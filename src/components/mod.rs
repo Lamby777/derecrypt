@@ -8,7 +8,9 @@ use gtk::{
 
 pub mod spells;
 
-use crate::{outfile_fmt, run_spell, save_to_outfile, set_outfile, DC, SPELLS};
+use crate::{
+    outfile_fmt, run_spell_by_id, save_to_outfile, set_outfile, DC, SPELLS,
+};
 
 pub fn build_main_ui(window: &ApplicationWindow) -> Label {
     let main_box = gtk::Box::builder()
@@ -55,7 +57,7 @@ pub fn build_spells_box() -> gtk::Box {
             #[strong]
             spell_name,
             move |_| {
-                run_spell(&spell_name);
+                run_spell_by_id(&spell_name);
             }
         ));
 

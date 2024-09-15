@@ -5,7 +5,7 @@ use adw::prelude::*;
 use gtk::{glib, Align, Button, Entry, Label, Orientation, Paned, Separator};
 
 use crate::modules::{DcMod, Spell};
-use crate::{run_spell, MODULE_REGISTRY};
+use crate::{run_spell_by_id, MODULE_REGISTRY};
 
 pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
     let main_box = gtk::Box::builder()
@@ -97,7 +97,7 @@ fn build_top_row() -> (gtk::Box, Entry) {
 
     let cast_button = Button::builder().label("Cast").build();
     cast_button.connect_clicked(glib::clone!(move |_| {
-        run_spell("Length (Default)");
+        run_spell_by_id("Length (Default)");
     }));
 
     top_row.append(&spellname_entry);
