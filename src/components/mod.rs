@@ -162,8 +162,6 @@ fn build_top_row(
     paned: &Paned,
     spells_box: &gtk::Box,
 ) -> (gtk::Box, Label) {
-    let dc = DC.read().unwrap();
-
     let top_row = gtk::Box::builder()
         .orientation(Orientation::Horizontal)
         .hexpand(true)
@@ -186,7 +184,7 @@ fn build_top_row(
 
     // make the output path label
     let outfile_label = Label::builder()
-        .label(outfile_fmt(&dc.outfile))
+        .label(outfile_fmt(&DC.with_borrow(|dc| dc.outfile.clone())))
         .name("outfile_label")
         .build();
 

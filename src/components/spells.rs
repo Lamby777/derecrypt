@@ -3,7 +3,7 @@ use gtk::{
     glib, Align, Button, Entry, Label, Orientation, Paned, Separator, Window,
 };
 
-use crate::{DC, MODULE_REGISTRY};
+use crate::MODULE_REGISTRY;
 
 pub fn build_spells_window(app_window: &impl IsA<Window>) -> Window {
     let window = Window::builder()
@@ -66,7 +66,8 @@ fn build_toolbox(blueprint: &gtk::Box) -> gtk::Box {
     toolbox.append(&label);
     toolbox.append(&Separator::new(Orientation::Horizontal));
 
-    for (module_name, module_default) in MODULE_REGISTRY.iter() {
+    let registry = MODULE_REGISTRY.with(|v| v.clone());
+    for (module_name, module_default) in registry.iter() {
         let button = Button::builder().label(module_name.to_owned()).build();
         toolbox.append(&button);
 
@@ -95,7 +96,7 @@ fn build_top_row() -> (gtk::Box, Entry) {
 
     let cast_button = Button::builder().label("Cast").build();
     cast_button.connect_clicked(glib::clone!(move |_| {
-        let dc = DC.read().unwrap();
+        // let dc = DC.read().unwrap();
     }));
 
     top_row.append(&spellname_entry);

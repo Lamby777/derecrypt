@@ -4,17 +4,15 @@
 ** - RC 		9/11/2024
 */
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::rc::Rc;
-use std::sync::{LazyLock, RwLock};
-
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
 use gtk::glib::Propagation;
 use gtk::{gdk, EventControllerKey, Label, TextView};
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::rc::Rc;
 
 mod consts;
 use consts::{APP_ID, DC_VERSION};
@@ -41,21 +39,20 @@ macro_rules! insert_modules {
     }};
 }
 
-static DC: LazyLock<RwLock<Derecrypt>> =
-    LazyLock::new(|| RwLock::new(Derecrypt::default()));
+thread_local! {
+    static DC: RefCell<Derecrypt> = RefCell::new(Derecrypt::default());
 
-/// List of all modules with their default settings.
-/// Meant to be copied out for use in spells.
-static MODULE_REGISTRY: LazyLock<HashMap<&'static str, &'static dyn DcMod>> =
-    LazyLock::new(|| {
-        let mut registry: HashMap<&'static str, &'static dyn DcMod> =
-            HashMap::new();
+    /// List of all modules with their default settings.
+    /// Meant to be copied out for use in spells.
+    static MODULE_REGISTRY: HashMap<&'static str, &'static dyn DcMod> = {
+        let mut registry: HashMap<_, &dyn DcMod> = HashMap::new();
 
         use modules::*;
         insert_modules!(registry; Deflate, Strip, Length);
 
         registry
-    });
+    }
+}
 
 /// Program state
 pub struct Derecrypt {
@@ -82,9 +79,9 @@ fn default_spells(app_window: &ApplicationWindow) -> Rc<RefCell<SpellsMap>> {
     let mut res = SpellsMap::new();
     let mut length = Spell::new(app_window);
 
-    length.ops.push(dyn_clone::clone_box(
-        *MODULE_REGISTRY.get("Length").unwrap(),
-    ));
+    length
+        .ops
+        .push(dyn_clone::clone_box(MODULE_REGISTRY.with(|v| v["Length"])));
     res.insert("Length (Default)".into(), length);
 
     Rc::new(RefCell::new(res))
@@ -151,12 +148,12 @@ fn build_window(app: &Application) {
 }
 
 pub fn save_to_outfile(textview: &TextView) {
-    let dc = DC.read().unwrap();
-
     let buffer = textview.buffer();
     let text = buffer.text(&buffer.start_iter(), &buffer.end_iter(), false);
 
-    let Some(outfile) = dc.outfile.as_ref() else {
+    let outfile = DC.with_borrow(|dc| dc.outfile.clone());
+
+    let Some(outfile) = outfile.as_ref() else {
         return;
     };
 
@@ -165,9 +162,12 @@ pub fn save_to_outfile(textview: &TextView) {
 }
 
 fn set_outfile(outfile: impl Into<PathBuf>, outfile_label: &Label) {
-    let mut dc = DC.write().unwrap();
-    dc.outfile = Some(outfile.into());
-    outfile_label.set_label(&outfile_fmt(&dc.outfile));
+    let outfile = DC.with_borrow_mut(|v| {
+        v.outfile = Some(outfile.into());
+        v.outfile.clone()
+    });
+
+    outfile_label.set_label(&outfile_fmt(&outfile));
 }
 
 fn outfile_fmt(outfile: &Option<PathBuf>) -> String {
