@@ -16,7 +16,9 @@ pub fn build_main_ui(window: &ApplicationWindow) -> Label {
         .orientation(Orientation::Vertical)
         .build();
 
-    let (paned, spells_box) = build_main_paned();
+    let paned = Paned::builder().end_child(&build_text_box_scroll()).build();
+    let spells_box = build_spells_box();
+
     let (top_row, outfile_label) = build_top_row(window, &paned, &spells_box);
 
     main_box.append(&top_row);
@@ -25,18 +27,6 @@ pub fn build_main_ui(window: &ApplicationWindow) -> Label {
 
     window.set_child(Some(&main_box));
     outfile_label
-}
-
-fn build_main_paned() -> (Paned, gtk::Box) {
-    let pane = Paned::builder().build();
-
-    let spells_box = build_spells_box();
-    let textbox_scroll = build_text_box_scroll();
-
-    // pane.set_start_child(Some(&toolbox));
-    pane.set_end_child(Some(&textbox_scroll));
-
-    (pane, spells_box)
 }
 
 /// Build the box containing a list of spells created.

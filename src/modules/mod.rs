@@ -5,7 +5,7 @@ use adw::prelude::*;
 use dyn_clone::DynClone;
 use gtk::Window;
 
-use crate::components::spells::build_spells_main_box;
+use crate::components::spells::build_spell_editor_main_box;
 
 // use fancy_regex::Regex;
 
@@ -46,7 +46,7 @@ impl Spell {
 
     /// draw all the widgets onto the window
     pub fn init_window(&self) {
-        let main_box = build_spells_main_box(self);
+        let main_box = build_spell_editor_main_box(self);
         self.window.set_child(Some(&main_box));
     }
 

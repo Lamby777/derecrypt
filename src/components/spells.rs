@@ -4,7 +4,7 @@ use gtk::{glib, Align, Button, Entry, Label, Orientation, Paned, Separator};
 use crate::modules::Spell;
 use crate::{run_spell, MODULE_REGISTRY};
 
-pub fn build_spells_main_box(spell: &Spell) -> gtk::Box {
+pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
