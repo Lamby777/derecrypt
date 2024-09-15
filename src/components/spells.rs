@@ -5,11 +5,11 @@ use gtk::{
 
 use crate::MODULE_REGISTRY;
 
-pub fn build_spells_window(app_window: &impl IsA<Window>) -> Window {
+pub fn build_spells_window() -> Window {
     let window = Window::builder()
-        .width_request(400)
-        .height_request(400)
-        .transient_for(app_window)
+        .width_request(800)
+        .height_request(600)
+        .title("Edit Spell")
         .build();
 
     let main_box = gtk::Box::builder()

@@ -4,15 +4,15 @@
 ** - RC 		9/11/2024
 */
 
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::path::PathBuf;
+
 use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
 use gtk::glib::Propagation;
 use gtk::{gdk, EventControllerKey, Label, TextView};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::rc::Rc;
 
 mod consts;
 use consts::{APP_ID, DC_VERSION};
@@ -51,7 +51,9 @@ thread_local! {
         insert_modules!(registry; Deflate, Strip, Length);
 
         registry
-    }
+    };
+
+    static SPELLS: RefCell<SpellsMap> = default_spells();
 }
 
 /// Program state
@@ -75,16 +77,16 @@ fn main() -> glib::ExitCode {
 }
 
 /// List of spells the user starts out with
-fn default_spells(app_window: &ApplicationWindow) -> Rc<RefCell<SpellsMap>> {
+fn default_spells() -> RefCell<SpellsMap> {
     let mut res = SpellsMap::new();
-    let mut length = Spell::new(app_window);
+    let mut length = Spell::new();
 
     length
         .ops
         .push(dyn_clone::clone_box(MODULE_REGISTRY.with(|v| v["Length"])));
     res.insert("Length (Default)".into(), length);
 
-    Rc::new(RefCell::new(res))
+    RefCell::new(res)
 }
 
 fn load_css() {
@@ -108,10 +110,8 @@ fn build_window(app: &Application) {
         .build()
         .clone();
 
-    let spells = leak(default_spells(&window));
-
     // Present window
-    let (textview, outfile_label) = build_main_ui(&window, spells);
+    let (textview, outfile_label) = build_main_ui(&window);
 
     let key_controller = EventControllerKey::new();
     let window2 = window.clone();

@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use adw::gtk::ApplicationWindow;
 use adw::prelude::*;
 use gtk::gio::Cancellable;
@@ -11,18 +8,15 @@ use gtk::{
 
 pub mod spells;
 
-use crate::{outfile_fmt, save_to_outfile, set_outfile, SpellsMap, DC};
+use crate::{outfile_fmt, save_to_outfile, set_outfile, DC, SPELLS};
 
-pub fn build_main_ui(
-    window: &ApplicationWindow,
-    spells: &'static Rc<RefCell<SpellsMap>>,
-) -> (TextView, Label) {
+pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
         .build();
 
-    let (paned, textview, spells_box) = build_main_paned(spells);
+    let (paned, textview, spells_box) = build_main_paned();
     let (top_row, outfile_label) =
         build_top_row(window, &textview, &paned, &spells_box);
 
@@ -34,12 +28,10 @@ pub fn build_main_ui(
     (textview, outfile_label)
 }
 
-fn build_main_paned(
-    spells: &'static Rc<RefCell<SpellsMap>>,
-) -> (Paned, TextView, gtk::Box) {
+fn build_main_paned() -> (Paned, TextView, gtk::Box) {
     let pane = Paned::builder().build();
 
-    let spells_box = build_spells_box(spells);
+    let spells_box = build_spells_box();
     let (textbox, textview) = build_text_box();
 
     // pane.set_start_child(Some(&toolbox));
@@ -49,7 +41,7 @@ fn build_main_paned(
 }
 
 /// Build the box containing a list of spells created.
-pub fn build_spells_box(spells: &'static Rc<RefCell<SpellsMap>>) -> gtk::Box {
+pub fn build_spells_box() -> gtk::Box {
     let spells_box = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .build();
@@ -63,7 +55,9 @@ pub fn build_spells_box(spells: &'static Rc<RefCell<SpellsMap>>) -> gtk::Box {
     spells_box.append(&label);
     spells_box.append(&Separator::new(Orientation::Horizontal));
 
-    for (spell_name, spell) in spells.borrow().iter() {
+    let spells = SPELLS.with_borrow(|spells| spells.clone());
+
+    for (spell_name, spell) in spells.iter() {
         let button = Button::builder().label(spell_name).build();
         spells_box.append(&button);
 

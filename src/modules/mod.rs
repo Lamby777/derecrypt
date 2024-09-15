@@ -1,5 +1,5 @@
 use dyn_clone::DynClone;
-use gtk::{ApplicationWindow, Window};
+use gtk::Window;
 
 use crate::components::spells::build_spells_window;
 
@@ -27,10 +27,10 @@ pub struct Spell {
 }
 
 impl Spell {
-    pub fn new(app_window: &ApplicationWindow) -> Self {
+    pub fn new() -> Self {
         Self {
             ops: vec![],
-            window: build_spells_window(app_window),
+            window: build_spells_window(),
         }
     }
 }
