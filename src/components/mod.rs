@@ -10,34 +10,33 @@ pub mod spells;
 
 use crate::{outfile_fmt, save_to_outfile, set_outfile, DC, SPELLS};
 
-pub fn build_main_ui(window: &ApplicationWindow) -> (TextView, Label) {
+pub fn build_main_ui(window: &ApplicationWindow) -> Label {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
         .build();
 
-    let (paned, textview, spells_box) = build_main_paned();
-    let (top_row, outfile_label) =
-        build_top_row(window, &textview, &paned, &spells_box);
+    let (paned, spells_box) = build_main_paned();
+    let (top_row, outfile_label) = build_top_row(window, &paned, &spells_box);
 
     main_box.append(&top_row);
     main_box.append(&Separator::new(Orientation::Horizontal));
     main_box.append(&paned);
 
     window.set_child(Some(&main_box));
-    (textview, outfile_label)
+    outfile_label
 }
 
-fn build_main_paned() -> (Paned, TextView, gtk::Box) {
+fn build_main_paned() -> (Paned, gtk::Box) {
     let pane = Paned::builder().build();
 
     let spells_box = build_spells_box();
-    let (textbox, textview) = build_text_box();
+    let textbox_scroll = build_text_box_scroll();
 
     // pane.set_start_child(Some(&toolbox));
-    pane.set_end_child(Some(&textbox));
+    pane.set_end_child(Some(&textbox_scroll));
 
-    (pane, textview, spells_box)
+    (pane, spells_box)
 }
 
 /// Build the box containing a list of spells created.
@@ -73,41 +72,31 @@ pub fn build_spells_box() -> gtk::Box {
     spells_box
 }
 
-fn build_text_box() -> (ScrolledWindow, TextView) {
+/// build the scrollable window containing the textview
+fn build_text_box_scroll() -> ScrolledWindow {
     const SCROLL_MARGIN: i32 = 15;
 
-    // the scrollable window containing the textview
-    let scroll = ScrolledWindow::builder()
+    let textview = DC.with_borrow(|v| v.textbox.clone());
+
+    ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
         .width_request(600)
         .margin_top(SCROLL_MARGIN)
         .margin_bottom(SCROLL_MARGIN)
         .margin_start(SCROLL_MARGIN)
         .margin_end(SCROLL_MARGIN)
-        .build();
-
-    let textview = TextView::builder()
-        .hexpand(true)
-        .vexpand(true)
-        .monospace(true)
-        .overflow(Overflow::Hidden)
-        .name("buffer")
-        .build();
-
-    scroll.set_child(Some(&textview));
-    (scroll, textview)
+        .child(&textview)
+        .build()
 }
 
 /// Open a file dialog to select a file to open
 pub fn open_file_dialog(
     window: &ApplicationWindow,
-    textbox: &TextView,
     outfile_label: &Label,
     update_outfile_path: bool,
 ) {
     let dialog = FileDialog::builder().build();
 
-    let textbox2 = textbox.clone();
     let outfile_label2 = outfile_label.clone();
     dialog.open(Some(window), None::<&Cancellable>, move |file| {
         let Ok(file) = file else {
@@ -118,7 +107,7 @@ pub fn open_file_dialog(
         let path = file.path().unwrap();
         let content = std::fs::read_to_string(&path).unwrap();
 
-        textbox2.buffer().set_text(&content);
+        DC.with_borrow(|v| v.textbox.buffer().set_text(&content));
 
         if update_outfile_path {
             set_outfile(path, &outfile_label2)
@@ -152,7 +141,6 @@ pub fn update_outfile_dialog(
 
 fn build_top_row(
     window: &ApplicationWindow,
-    textbox: &TextView,
     paned: &Paned,
     spells_box: &gtk::Box,
 ) -> (gtk::Box, Label) {
@@ -184,10 +172,9 @@ fn build_top_row(
 
     // connect the button signals
     let window2 = window.clone();
-    let textbox2 = textbox.clone();
     let outfile_label2 = outfile_label.clone();
     open_button.connect_clicked(move |_| {
-        open_file_dialog(&window2, &textbox2, &outfile_label2, true)
+        open_file_dialog(&window2, &outfile_label2, true)
     });
 
     let paned2 = paned.clone();

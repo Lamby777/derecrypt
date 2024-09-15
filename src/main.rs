@@ -12,7 +12,7 @@ use adw::gtk::{ApplicationWindow, CssProvider};
 use adw::prelude::*;
 use adw::{glib, Application};
 use gtk::glib::Propagation;
-use gtk::{gdk, EventControllerKey, Label, TextView};
+use gtk::{gdk, EventControllerKey, Label, Overflow, TextView};
 
 mod consts;
 use consts::{APP_ID, DC_VERSION};
@@ -60,11 +60,23 @@ thread_local! {
 pub struct Derecrypt {
     /// Path to save the buffer to
     pub outfile: Option<PathBuf>,
+
+    /// The main textview containing the buffer
+    pub textbox: TextView,
 }
 
 impl Default for Derecrypt {
     fn default() -> Self {
-        Self { outfile: None }
+        Self {
+            outfile: None,
+            textbox: TextView::builder()
+                .hexpand(true)
+                .vexpand(true)
+                .monospace(true)
+                .overflow(Overflow::Hidden)
+                .name("buffer")
+                .build(),
+        }
     }
 }
 
@@ -111,27 +123,27 @@ fn build_window(app: &Application) {
         .clone();
 
     // Present window
-    let (textview, outfile_label) = build_main_ui(&window);
+    let outfile_label = build_main_ui(&window);
 
     let key_controller = EventControllerKey::new();
     let window2 = window.clone();
-    let textview2 = textview.clone();
     key_controller.connect_key_pressed(move |_, keyval, _keycode, state| {
         let ctrl_down = state.contains(gdk::ModifierType::CONTROL_MASK);
         let shift_down = state.contains(gdk::ModifierType::SHIFT_MASK);
 
         if ctrl_down && keyval.to_lower() == gdk::Key::o {
-            open_file_dialog(&window2, &textview2, &outfile_label, !shift_down);
+            open_file_dialog(&window2, &outfile_label, !shift_down);
             return Propagation::Stop;
         }
 
+        let textbox = DC.with_borrow(|dc| dc.textbox.clone());
         if ctrl_down && keyval.to_lower() == gdk::Key::s {
             if shift_down {
                 // Updates the output location and then saves the buffer to disk.
-                update_outfile_dialog(&window2, &outfile_label, &textview2);
+                update_outfile_dialog(&window2, &outfile_label, &textbox);
             } else {
                 // Saves the buffer to disk.
-                save_to_outfile(&textview2);
+                save_to_outfile(&textbox);
             }
 
             return Propagation::Stop;
