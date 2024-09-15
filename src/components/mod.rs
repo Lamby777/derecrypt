@@ -3,7 +3,7 @@ use adw::prelude::*;
 use gtk::gio::Cancellable;
 use gtk::{
     glib, Align, Button, FileDialog, Label, Orientation, Overflow, Paned,
-    ScrolledWindow, Separator, TextView,
+    ScrolledWindow, Separator,
 };
 
 pub mod spells;
@@ -76,7 +76,7 @@ pub fn build_spells_box() -> gtk::Box {
 fn build_text_box_scroll() -> ScrolledWindow {
     const SCROLL_MARGIN: i32 = 15;
 
-    let textview = DC.with_borrow(|v| v.textbox.clone());
+    let textview = DC.with_borrow(|dc| dc.textbox.clone());
 
     ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
@@ -107,7 +107,7 @@ pub fn open_file_dialog(
         let path = file.path().unwrap();
         let content = std::fs::read_to_string(&path).unwrap();
 
-        DC.with_borrow(|v| v.textbox.buffer().set_text(&content));
+        DC.with_borrow(|dc| dc.textbox.buffer().set_text(&content));
 
         if update_outfile_path {
             set_outfile(path, &outfile_label2)
@@ -119,12 +119,10 @@ pub fn open_file_dialog(
 pub fn update_outfile_dialog(
     window: &ApplicationWindow,
     outfile_label: &Label,
-    textbox: &TextView,
 ) {
     let dialog = FileDialog::builder().build();
 
     let outfile_label2 = outfile_label.clone();
-    let textbox2 = textbox.clone();
     dialog.save(Some(window), None::<&Cancellable>, move |file| {
         let Ok(file) = file else {
             println!("No file selected.");
@@ -135,7 +133,7 @@ pub fn update_outfile_dialog(
         println!("Updating outfile path to {:?}", path);
 
         set_outfile(path, &outfile_label2);
-        save_to_outfile(&textbox2);
+        save_to_outfile();
     });
 }
 

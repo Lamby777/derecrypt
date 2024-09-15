@@ -57,7 +57,7 @@ thread_local! {
 }
 
 /// Program state
-pub struct Derecrypt {
+struct Derecrypt {
     /// Path to save the buffer to
     pub outfile: Option<PathBuf>,
 
@@ -136,14 +136,13 @@ fn build_window(app: &Application) {
             return Propagation::Stop;
         }
 
-        let textbox = DC.with_borrow(|dc| dc.textbox.clone());
         if ctrl_down && keyval.to_lower() == gdk::Key::s {
             if shift_down {
                 // Updates the output location and then saves the buffer to disk.
-                update_outfile_dialog(&window2, &outfile_label, &textbox);
+                update_outfile_dialog(&window2, &outfile_label);
             } else {
                 // Saves the buffer to disk.
-                save_to_outfile(&textbox);
+                save_to_outfile();
             }
 
             return Propagation::Stop;
@@ -159,10 +158,16 @@ fn build_window(app: &Application) {
     window.connect_close_request(|_| glib::Propagation::Proceed);
 }
 
-pub fn save_to_outfile(textview: &TextView) {
-    let buffer = textview.buffer();
-    let text = buffer.text(&buffer.start_iter(), &buffer.end_iter(), false);
+fn buffer_text() -> String {
+    let textbox = DC.with_borrow(|dc| dc.textbox.clone());
+    let buffer = textbox.buffer();
 
+    buffer
+        .text(&buffer.start_iter(), &buffer.end_iter(), false)
+        .to_string()
+}
+
+fn save_to_outfile() {
     let outfile = DC.with_borrow(|dc| dc.outfile.clone());
 
     let Some(outfile) = outfile.as_ref() else {
@@ -170,13 +175,13 @@ pub fn save_to_outfile(textview: &TextView) {
     };
 
     println!("Saving buffer to {:?}", &outfile);
-    std::fs::write(outfile, text).unwrap();
+    std::fs::write(outfile, buffer_text()).unwrap();
 }
 
 fn set_outfile(outfile: impl Into<PathBuf>, outfile_label: &Label) {
-    let outfile = DC.with_borrow_mut(|v| {
-        v.outfile = Some(outfile.into());
-        v.outfile.clone()
+    let outfile = DC.with_borrow_mut(|dc| {
+        dc.outfile = Some(outfile.into());
+        dc.outfile.clone()
     });
 
     outfile_label.set_label(&outfile_fmt(&outfile));

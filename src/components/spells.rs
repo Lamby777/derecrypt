@@ -3,7 +3,7 @@ use gtk::{
     glib, Align, Button, Entry, Label, Orientation, Paned, Separator, Window,
 };
 
-use crate::MODULE_REGISTRY;
+use crate::{buffer_text, DC, MODULE_REGISTRY, SPELLS};
 
 pub fn build_spells_window() -> Window {
     let window = Window::builder()
@@ -96,7 +96,17 @@ fn build_top_row() -> (gtk::Box, Entry) {
 
     let cast_button = Button::builder().label("Cast").build();
     cast_button.connect_clicked(glib::clone!(move |_| {
-        // let dc = DC.read().unwrap();
+        let content = buffer_text();
+
+        let spellname = "Length (Default)";
+        let mut spell =
+            SPELLS.with_borrow(|spells| spells.get(spellname).unwrap().clone());
+
+        let output = spell.ops.iter_mut().fold(content, |acc, op| op.run(&acc));
+
+        DC.with_borrow_mut(|dc| {
+            dc.textbox.buffer().set_text(&output);
+        });
     }));
 
     top_row.append(&spellname_entry);
