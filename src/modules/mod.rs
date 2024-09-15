@@ -1,7 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use adw::prelude::*;
 use dyn_clone::DynClone;
 use gtk::Window;
 
-use crate::components::spells::build_spells_window;
+use crate::components::spells::build_spells_main_box;
 
 // use fancy_regex::Regex;
 
@@ -22,20 +26,34 @@ dyn_clone::clone_trait_object!(DcMod);
 /// There will later be a module which uses this list to apply the operations.
 #[derive(Clone)]
 pub struct Spell {
-    pub ops: Vec<Box<dyn DcMod>>,
+    pub ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
     pub window: Window,
 }
 
 impl Spell {
     pub fn new() -> Self {
-        let mut ops = vec![];
-        let window = build_spells_window(&mut ops);
+        let ops = Rc::new(RefCell::new(vec![]));
+        let window = Window::builder()
+            .width_request(800)
+            .height_request(600)
+            .title("Edit Spell")
+            .build();
 
-        Self { ops, window }
+        let res = Self { ops, window };
+        res.init_window();
+        res
     }
 
+    /// draw all the widgets onto the window
+    pub fn init_window(&self) {
+        let main_box = build_spells_main_box(self);
+        self.window.set_child(Some(&main_box));
+    }
+
+    /// run every operation in the list on the input string
     pub fn run(&mut self, input: &str) -> String {
         self.ops
+            .borrow()
             .iter()
             .fold(input.to_owned(), |acc, op| op.run(&acc))
     }

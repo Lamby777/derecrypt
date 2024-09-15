@@ -1,19 +1,10 @@
 use adw::prelude::*;
-use gtk::{
-    glib, Align, Button, Entry, Label, Orientation, Paned, Separator, Window,
-};
+use gtk::{glib, Align, Button, Entry, Label, Orientation, Paned, Separator};
 
-use crate::modules::DcMod;
-use crate::{buffer_text, run_spell, DC, MODULE_REGISTRY, SPELLS};
+use crate::modules::Spell;
+use crate::{run_spell, MODULE_REGISTRY};
 
-// TODO use mut slice instead of vec
-pub fn build_spells_window(ops: &mut Vec<Box<dyn DcMod>>) -> Window {
-    let window = Window::builder()
-        .width_request(800)
-        .height_request(600)
-        .title("Edit Spell")
-        .build();
-
+pub fn build_spells_main_box(spell: &Spell) -> gtk::Box {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
@@ -34,9 +25,7 @@ pub fn build_spells_window(ops: &mut Vec<Box<dyn DcMod>>) -> Window {
     main_box.append(&Separator::new(Orientation::Horizontal));
     main_box.append(&paned);
 
-    window.set_child(Some(&main_box));
-
-    window
+    main_box
 }
 
 fn build_blueprint_box() -> gtk::Box {
@@ -54,7 +43,7 @@ fn build_blueprint_box() -> gtk::Box {
     blueprint
 }
 
-fn build_toolbox(blueprint: &gtk::Box) -> gtk::Box {
+fn build_toolbox(_blueprint: &gtk::Box) -> gtk::Box {
     let toolbox = gtk::Box::builder()
         .orientation(Orientation::Vertical)
         .build();
@@ -74,7 +63,7 @@ fn build_toolbox(blueprint: &gtk::Box) -> gtk::Box {
         toolbox.append(&button);
 
         // Add the module's default state to the current spell
-        let module_default = dyn_clone::clone_box(*module_default);
+        let _module_default = dyn_clone::clone_box(*module_default);
         button.connect_clicked(glib::clone!(move |_| {
             // spell.window.present();
         }));
