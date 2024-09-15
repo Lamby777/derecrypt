@@ -166,6 +166,7 @@ fn build_top_row(
 
     let top_row = gtk::Box::builder()
         .orientation(Orientation::Horizontal)
+        .hexpand(true)
         .homogeneous(true)
         .build();
 

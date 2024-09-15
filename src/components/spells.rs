@@ -1,5 +1,7 @@
 use adw::prelude::*;
-use gtk::{glib, Align, Button, Label, Orientation, Paned, Separator, Window};
+use gtk::{
+    glib, Align, Button, Entry, Label, Orientation, Paned, Separator, Window,
+};
 
 use crate::{DC, MODULE_REGISTRY};
 
@@ -15,12 +17,11 @@ pub fn build_spells_window(app_window: &impl IsA<Window>) -> Window {
         .orientation(Orientation::Vertical)
         .build();
 
-    let blueprint = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .build();
+    let blueprint = build_blueprint_box();
     let toolbox = build_toolbox(&blueprint);
     let paned = Paned::builder()
         .orientation(Orientation::Horizontal)
+        .vexpand(true)
         .build();
     paned.set_start_child(Some(&toolbox));
     paned.set_end_child(Some(&blueprint));
@@ -34,6 +35,21 @@ pub fn build_spells_window(app_window: &impl IsA<Window>) -> Window {
     window.set_child(Some(&main_box));
 
     window
+}
+
+fn build_blueprint_box() -> gtk::Box {
+    let blueprint = gtk::Box::builder()
+        .orientation(Orientation::Vertical)
+        .build();
+
+    blueprint.append(
+        &Label::builder()
+            .label("Blueprint goes here")
+            .halign(Align::Center)
+            .build(),
+    );
+
+    blueprint
 }
 
 fn build_toolbox(blueprint: &gtk::Box) -> gtk::Box {
@@ -64,32 +80,26 @@ fn build_toolbox(blueprint: &gtk::Box) -> gtk::Box {
     toolbox
 }
 
-fn build_top_row() -> (gtk::Box, Label) {
+fn build_top_row() -> (gtk::Box, Entry) {
     let top_row = gtk::Box::builder()
         .orientation(Orientation::Horizontal)
-        // .homogeneous(true)
+        .hexpand(true)
         .build();
 
     // make the spell name box (can be edited)
-    let spellname_label = Label::builder()
-        .label("Spell Name Goes Here (make this a textbox)")
+    let spellname_entry = Entry::builder()
+        .placeholder_text("Spell Name Here")
         .name("outfile_label")
-        .build();
-
-    let cast_box = gtk::Box::builder()
-        .orientation(Orientation::Horizontal)
-        .halign(Align::End)
+        .hexpand(true)
         .build();
 
     let cast_button = Button::builder().label("Cast").build();
-    cast_box.append(&cast_button);
-
     cast_button.connect_clicked(glib::clone!(move |_| {
         let dc = DC.read().unwrap();
     }));
 
-    top_row.append(&spellname_label);
-    top_row.append(&cast_box);
+    top_row.append(&spellname_entry);
+    top_row.append(&cast_button);
 
-    (top_row, spellname_label)
+    (top_row, spellname_entry)
 }
