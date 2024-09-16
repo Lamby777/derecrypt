@@ -4,11 +4,15 @@ use std::rc::Rc;
 use adw::prelude::*;
 use dyn_clone::DynClone;
 use gtk::Window;
-
-use crate::components::spells::build_spell_editor_main_box;
-
 // use fancy_regex::Regex;
 
+use crate::components::blueprint::BlueprintBox;
+use crate::components::spells::build_spell_editor_main_box;
+
+mod basic;
+pub use basic::{Deflate, Length, Strip};
+
+/// The trait implemented by all string operations available in the program
 pub trait DcMod: DynClone + Send + Sync {
     /// Display name of the operation
     fn op_display_name(&self) -> &'static str;
@@ -16,8 +20,8 @@ pub trait DcMod: DynClone + Send + Sync {
     /// Run the operation on the input
     fn run(&self, input: &str) -> String;
 
-    /// Draw onto the GTK window
-    fn draw(&self, _window: &Window) {}
+    /// Draw onto the box inside the blueprint editor
+    fn draw(&self, _blueprint_entry: &gtk::Box) {}
 }
 
 dyn_clone::clone_trait_object!(DcMod);
@@ -28,6 +32,7 @@ dyn_clone::clone_trait_object!(DcMod);
 pub struct Spell {
     pub ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
     pub window: Window,
+    pub blueprint: BlueprintBox,
 }
 
 impl Spell {
@@ -40,15 +45,23 @@ impl Spell {
             .hide_on_close(true)
             .build();
 
-        let res = Self { ops, window };
-        res.init_window();
-        res
+        let blueprint = BlueprintBox::new();
+        Self::init_window(&window, ops.clone(), blueprint.clone());
+        Self {
+            ops,
+            window,
+            blueprint,
+        }
     }
 
     /// draw all the widgets onto the window
-    pub fn init_window(&self) {
-        let main_box = build_spell_editor_main_box(self);
-        self.window.set_child(Some(&main_box));
+    pub fn init_window(
+        window: &Window,
+        ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
+        blueprint: BlueprintBox,
+    ) {
+        let main_box = build_spell_editor_main_box(ops.clone(), &blueprint);
+        window.set_child(Some(&main_box));
     }
 
     /// run every operation in the list on the input string
@@ -57,43 +70,5 @@ impl Spell {
             .borrow()
             .iter()
             .fold(input.to_owned(), |acc, op| op.run(&acc))
-    }
-}
-
-#[derive(Clone, Default)]
-pub struct Deflate;
-impl DcMod for Deflate {
-    fn op_display_name(&self) -> &'static str {
-        "Deflate"
-    }
-
-    fn run(&self, input: &str) -> String {
-        let mut out = input.to_owned();
-        out.retain(|c| !c.is_whitespace());
-        out
-    }
-}
-
-#[derive(Clone, Default)]
-pub struct Strip;
-impl DcMod for Strip {
-    fn op_display_name(&self) -> &'static str {
-        "Strip"
-    }
-
-    fn run(&self, input: &str) -> String {
-        input.trim().to_string()
-    }
-}
-
-#[derive(Clone, Default)]
-pub struct Length;
-impl DcMod for Length {
-    fn op_display_name(&self) -> &'static str {
-        "Length"
-    }
-
-    fn run(&self, input: &str) -> String {
-        input.len().to_string()
     }
 }

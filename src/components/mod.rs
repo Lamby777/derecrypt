@@ -6,6 +6,7 @@ use gtk::{
     ScrolledWindow, Separator,
 };
 
+pub mod blueprint;
 pub mod spells;
 
 use crate::{

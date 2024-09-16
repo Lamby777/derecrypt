@@ -4,22 +4,26 @@ use std::rc::Rc;
 use adw::prelude::*;
 use gtk::{glib, Align, Button, Entry, Label, Orientation, Paned, Separator};
 
-use crate::modules::{DcMod, Spell};
+use crate::modules::DcMod;
 use crate::{run_spell_by_id, MODULE_REGISTRY};
 
-pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
+use super::blueprint::BlueprintBox;
+
+pub fn build_spell_editor_main_box(
+    ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
+    blueprint: &BlueprintBox,
+) -> gtk::Box {
     let main_box = gtk::Box::builder()
         .hexpand(true)
         .orientation(Orientation::Vertical)
         .build();
 
-    let blueprint = build_blueprint_box();
     let paned = Paned::builder()
         .orientation(Orientation::Horizontal)
         .vexpand(true)
         .build();
-    paned.set_start_child(Some(&build_toolbox(&blueprint, spell.ops.clone())));
-    paned.set_end_child(Some(&blueprint));
+    paned.set_start_child(Some(&build_toolbox(blueprint, ops.clone())));
+    paned.set_end_child(Some(&blueprint.component));
 
     let (top_row, _spellname_label) = build_top_row();
 
@@ -30,23 +34,8 @@ pub fn build_spell_editor_main_box(spell: &Spell) -> gtk::Box {
     main_box
 }
 
-fn build_blueprint_box() -> gtk::Box {
-    let blueprint = gtk::Box::builder()
-        .orientation(Orientation::Vertical)
-        .build();
-
-    blueprint.append(
-        &Label::builder()
-            .label("Blueprint goes here")
-            .halign(Align::Center)
-            .build(),
-    );
-
-    blueprint
-}
-
 fn build_toolbox(
-    _blueprint: &gtk::Box,
+    _blueprint: &BlueprintBox,
     ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
 ) -> gtk::Box {
     let toolbox = gtk::Box::builder()
