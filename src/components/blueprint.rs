@@ -11,14 +11,11 @@ pub struct BlueprintBox {
 impl BlueprintBox {
     pub fn new() -> Self {
         let component = gtk::Box::builder()
-            .orientation(Orientation::Horizontal)
+            .orientation(Orientation::Vertical)
             .hexpand(true)
             .build();
 
-        let res = Self { component };
-        res.push_entry(&crate::modules::Deflate);
-
-        res
+        Self { component }
     }
 
     pub fn push_entry(&self, op: &dyn DcMod) {

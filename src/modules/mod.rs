@@ -26,6 +26,7 @@ pub trait DcMod: DynClone + Send + Sync {
 
 dyn_clone::clone_trait_object!(DcMod);
 
+// TODO less `pub`s
 /// This is not an actual module, but a list of operations.
 /// There will later be a module which uses this list to apply the operations.
 #[derive(Clone)]
@@ -52,6 +53,11 @@ impl Spell {
             window,
             blueprint,
         }
+    }
+
+    pub fn push_op(&mut self, op: Box<dyn DcMod>) {
+        self.blueprint.push_entry(&*op);
+        self.ops.borrow_mut().push(op);
     }
 
     /// draw all the widgets onto the window

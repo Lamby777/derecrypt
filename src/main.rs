@@ -91,13 +91,11 @@ fn main() -> glib::ExitCode {
 /// List of spells the user starts out with
 fn default_spells() -> RefCell<SpellsMap> {
     let mut res = SpellsMap::new();
-    let length = Spell::new();
+    let mut length_spell = Spell::new();
 
-    length
-        .ops
-        .borrow_mut()
-        .push(dyn_clone::clone_box(MODULE_REGISTRY.with(|v| v["Length"])));
-    res.insert("Length (Default)".into(), length);
+    let length_mod = MODULE_REGISTRY.with(|v| v["Length"]);
+    length_spell.push_op(dyn_clone::clone_box(length_mod));
+    res.insert("Length (Default)".into(), length_spell);
 
     res.insert("Empty".into(), Spell::new());
 

@@ -35,7 +35,7 @@ pub fn build_spell_editor_main_box(
 }
 
 fn build_toolbox(
-    _blueprint: &BlueprintBox,
+    blueprint: &BlueprintBox,
     ops: Rc<RefCell<Vec<Box<dyn DcMod>>>>,
 ) -> gtk::Box {
     let toolbox = gtk::Box::builder()
@@ -59,11 +59,15 @@ fn build_toolbox(
         // Add the module's default state to the current spell
         button.connect_clicked(glib::clone!(
             #[strong]
+            blueprint,
+            #[strong]
             ops,
             #[strong]
             module_default,
             move |_| {
-                ops.borrow_mut().push(dyn_clone::clone_box(module_default));
+                let module = dyn_clone::clone_box(module_default);
+                blueprint.push_entry(&*module);
+                ops.borrow_mut().push(module);
             }
         ));
     }
