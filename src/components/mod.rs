@@ -93,7 +93,7 @@ fn build_text_box_scroll() -> ScrolledWindow {
 
     ScrolledWindow::builder()
         .overflow(Overflow::Hidden)
-        .width_request(600)
+        .hexpand(true)
         .margin_top(SCROLL_MARGIN)
         .margin_bottom(SCROLL_MARGIN)
         .margin_start(SCROLL_MARGIN)

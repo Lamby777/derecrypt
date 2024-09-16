@@ -37,6 +37,7 @@ impl Spell {
             .width_request(800)
             .height_request(600)
             .title("Edit Spell")
+            .hide_on_close(true)
             .build();
 
         let res = Self { ops, window };

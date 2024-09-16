@@ -83,7 +83,7 @@ impl Default for Derecrypt {
 fn main() -> glib::ExitCode {
     // start the gtk app
     let app = Application::builder().application_id(APP_ID).build();
-    app.connect_activate(move |app| build_window(app));
+    app.connect_activate(build_window);
     app.connect_startup(|_| load_css());
     app.run()
 }
